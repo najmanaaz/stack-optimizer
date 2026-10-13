@@ -1,0 +1,192 @@
+{
+  "note": "Approximate on-demand USD list prices for US regions (EU regions typically +5-15%). Monthly figures assume 730 hours. Verify with calculator.aws and cloud.google.com/products/calculator before committing.",
+  "categories": {
+    "compute_vm": {
+      "aws": [
+        "EC2 t4g.medium (2 vCPU burstable, 4 GB, Graviton): ~$0.034/h, ~$25/mo",
+        "EC2 m7g.large (2 vCPU, 8 GB, Graviton3): ~$0.082/h, ~$60/mo",
+        "EC2 m7i.large (2 vCPU, 8 GB, Intel): ~$0.101/h, ~$74/mo",
+        "EC2 c7g.xlarge (4 vCPU, 8 GB, Graviton3): ~$0.145/h, ~$106/mo",
+        "Spot instances: typically 60-90% below on-demand for interruptible work"
+      ],
+      "gcp": [
+        "e2-medium (2 vCPU shared, 4 GB): ~$0.034/h, ~$25/mo",
+        "e2-standard-2 (2 vCPU, 8 GB): ~$0.067/h, ~$49/mo",
+        "n2-standard-2 (2 vCPU, 8 GB): ~$0.097/h, ~$71/mo before sustained-use discount",
+        "Arm (T2A / C4A Axion): roughly 10-20% better price-performance than x86 equivalents",
+        "Spot VMs: typically 60-91% below on-demand"
+      ]
+    },
+    "containers_serverless": {
+      "aws": [
+        "ECS/EKS on Fargate (x86): ~$0.0405 per vCPU-h + ~$0.0044 per GB-h; Arm ~20% cheaper",
+        "App Runner: ~$0.064 per vCPU-h + ~$0.007 per GB-h (active), memory-only when idle"
+      ],
+      "gcp": [
+        "Cloud Run (request-based): ~$0.000024 per vCPU-s + ~$0.0000025 per GiB-s + $0.40 per million requests",
+        "Cloud Run free tier: 180k vCPU-s, 360k GiB-s and 2M requests per month",
+        "Cloud Run scales to zero; instance-based billing is ~25% cheaper for steady traffic"
+      ]
+    },
+    "functions": {
+      "aws": [
+        "Lambda: $0.20 per million requests + ~$0.0000167 per GB-s (x86), ~$0.0000133 per GB-s (Arm)",
+        "Lambda free tier: 1M requests and 400k GB-s per month"
+      ],
+      "gcp": [
+        "Cloud Run functions: billed as Cloud Run (see containers_serverless), $0.40 per million invocations",
+        "Free tier: 2M invocations per month"
+      ]
+    },
+    "kubernetes": {
+      "aws": [
+        "EKS control plane: $0.10/h (~$73/mo) per cluster, plus EC2 or Fargate for nodes",
+        "EKS Auto Mode adds a management fee of roughly 12% on top of instance cost"
+      ],
+      "gcp": [
+        "GKE Standard: $0.10/h (~$73/mo) per cluster; one zonal cluster's fee is covered by a monthly credit",
+        "GKE Autopilot: ~$0.0445 per vCPU-h + ~$0.0049 per GB-h for requested pod resources"
+      ]
+    },
+    "relational_db": {
+      "aws": [
+        "RDS PostgreSQL/MySQL db.t4g.medium (2 vCPU, 4 GB), single-AZ: ~$0.065/h, ~$47/mo; Multi-AZ doubles it",
+        "RDS db.m7g.large (2 vCPU, 8 GB), single-AZ: ~$0.168/h, ~$123/mo",
+        "RDS gp3 storage: ~$0.115 per GB-month",
+        "Aurora Serverless v2: ~$0.12 per ACU-h (min 0 ACU with auto-pause) + ~$0.10 per GB-month storage"
+      ],
+      "gcp": [
+        "Cloud SQL PostgreSQL Enterprise: ~$0.0413 per vCPU-h + ~$0.007 per GB-h; 2 vCPU/8 GB ~$100/mo; HA doubles it",
+        "Cloud SQL SSD storage: ~$0.17 per GB-month",
+        "AlloyDB for PostgreSQL: higher base cost, suited to heavy OLTP/analytics workloads"
+      ]
+    },
+    "nosql_db": {
+      "aws": [
+        "DynamoDB on-demand: ~$0.625 per million write units, ~$0.125 per million read units, $0.25 per GB-month",
+        "DynamoDB free tier: 25 GB storage (provisioned capacity free tier also available)"
+      ],
+      "gcp": [
+        "Firestore: ~$0.06 per 100k reads, ~$0.18 per 100k writes, ~$0.18 per GB-month",
+        "Firestore free tier: 50k reads, 20k writes per day and 1 GB storage"
+      ]
+    },
+    "cache": {
+      "aws": [
+        "ElastiCache cache.t4g.small (Valkey/Redis): ~$0.032/h, ~$23/mo; Valkey is ~20% cheaper than Redis OSS",
+        "ElastiCache Serverless (Valkey): billed per GB-hour stored plus per request unit"
+      ],
+      "gcp": [
+        "Memorystore for Redis Basic: ~$0.049 per GB-h (1 GB ~$36/mo); Standard (HA) roughly 2x",
+        "Memorystore for Valkey also available"
+      ]
+    },
+    "object_storage": {
+      "aws": [
+        "S3 Standard: ~$0.023 per GB-month; Infrequent Access ~$0.0125; Glacier Instant Retrieval ~$0.004",
+        "S3 Glacier Deep Archive: ~$0.00099 per GB-month",
+        "S3 Intelligent-Tiering moves objects between tiers automatically for a small monitoring fee"
+      ],
+      "gcp": [
+        "Cloud Storage Standard: ~$0.020 per GB-month (regional US); Nearline ~$0.010; Coldline ~$0.004",
+        "Cloud Storage Archive: ~$0.0012 per GB-month",
+        "Autoclass moves objects between classes automatically"
+      ]
+    },
+    "cdn_networking": {
+      "aws": [
+        "CloudFront: ~$0.085 per GB (first 10 TB, US/EU); free tier 1 TB and 10M requests per month",
+        "Internet egress from EC2/S3: ~$0.09 per GB (first 10 TB); 100 GB per month free",
+        "NAT Gateway: ~$0.045/h (~$33/mo) + $0.045 per GB processed; a common hidden cost"
+      ],
+      "gcp": [
+        "Cloud CDN: ~$0.02-0.08 per GB depending on volume and region, plus cache-fill",
+        "Internet egress (Premium tier): ~$0.12 per GB first TB; Standard tier ~$0.085 per GB",
+        "Cloud NAT: ~$0.0014 per VM-hour + $0.045 per GB processed"
+      ]
+    },
+    "auth": {
+      "aws": [
+        "Cognito Lite: first 10,000 MAU free, then ~$0.0055 per MAU; Essentials tier ~$0.015 per MAU"
+      ],
+      "gcp": [
+        "Identity Platform / Firebase Auth: free up to ~50,000 MAU (email/social), then ~$0.0055 per MAU"
+      ]
+    },
+    "messaging": {
+      "aws": [
+        "SQS Standard: $0.40 per million requests (first 1M free)",
+        "SNS: $0.50 per million publishes; EventBridge: $1.00 per million events"
+      ],
+      "gcp": [
+        "Pub/Sub: ~$40 per TiB of throughput (first 10 GiB per month free)",
+        "Cloud Tasks: $0.40 per million operations (first 1M free)"
+      ]
+    },
+    "data_warehouse": {
+      "aws": [
+        "Redshift Serverless: ~$0.375 per RPU-h (base capacity from 4 RPU), billed per second while queries run",
+        "Athena: $5 per TB scanned; partitioning and Parquet cut scans by 80-90%"
+      ],
+      "gcp": [
+        "BigQuery on-demand: ~$6.25 per TiB scanned, first 1 TiB per month free",
+        "BigQuery storage: ~$0.02 per GB-month active, ~$0.01 long-term (90+ days)"
+      ]
+    },
+    "observability": {
+      "aws": [
+        "CloudWatch Logs: ~$0.50 per GB ingested, ~$0.03 per GB-month stored",
+        "CloudWatch custom metrics: ~$0.30 per metric per month (first 10k)",
+        "Often 50-80% cheaper than third-party APM/log SaaS at small-to-mid scale"
+      ],
+      "gcp": [
+        "Cloud Logging: ~$0.50 per GiB ingested after 50 GiB per project free; 30-day retention included",
+        "Cloud Monitoring: Google Cloud metrics free; custom metrics ~$0.258 per MiB"
+      ]
+    },
+    "ai_ml": {
+      "aws": [
+        "Amazon Bedrock: per-token pricing per model (Claude, Llama, Mistral, Nova); batch inference ~50% cheaper",
+        "Bedrock prompt caching reduces repeated-context input cost by up to 90%",
+        "SageMaker for custom models: instance-hour billing"
+      ],
+      "gcp": [
+        "Vertex AI: per-token pricing per model (Gemini, Claude, Llama); batch prediction ~50% cheaper",
+        "Vertex AI context caching reduces repeated-context input cost"
+      ]
+    },
+    "hosting_frontend": {
+      "aws": [
+        "Amplify Hosting: ~$0.01 per build minute, ~$0.15 per GB served, ~$0.023 per GB stored",
+        "S3 + CloudFront static hosting: often under $5/mo for small sites"
+      ],
+      "gcp": [
+        "Firebase Hosting: 10 GB storage and 360 MB/day transfer free, then ~$0.026 per GB stored and ~$0.15 per GB served",
+        "Cloud Storage + Cloud CDN static hosting for larger sites"
+      ]
+    },
+    "ci_cd": {
+      "aws": [
+        "CodeBuild general1.small: ~$0.005 per build minute (100 min/month free)",
+        "CodePipeline V2: ~$0.002 per action execution minute"
+      ],
+      "gcp": [
+        "Cloud Build: ~$0.006 per build minute on e2-standard-2 (2,500 min/month free)",
+        "Cloud Deploy: first delivery pipeline free, then ~$5 per pipeline per month"
+      ]
+    },
+    "commitment_discounts": {
+      "aws": [
+        "Compute Savings Plans: up to ~66% off (1- or 3-year), applies across EC2, Fargate and Lambda",
+        "EC2 Instance Savings Plans: up to ~72% off, locked to an instance family and region",
+        "RDS / ElastiCache Reserved Instances: up to ~69% off with 3-year all-upfront",
+        "Graviton (Arm) instances: up to ~40% better price-performance than comparable x86"
+      ],
+      "gcp": [
+        "Sustained use discounts: automatic, up to ~30% on N1/N2 VMs running most of the month (not E2)",
+        "Resource-based committed use discounts: ~37% (1-year) and ~55% (3-year), up to 70% for memory-optimised",
+        "Flexible (spend-based) CUDs: ~28% (1-year) and ~46% (3-year) across Compute Engine, GKE and Cloud Run"
+      ]
+    }
+  }
+}

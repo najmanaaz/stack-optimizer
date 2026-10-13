@@ -1,0 +1,3229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stack Optimizer — T4Tangerine</title>
+  <meta name="description" content="See where your company overpays for technology, what to change, and how much you can save next year. A plain-language savings report, shaped by your own policies and goals.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍊</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --amber: #FF9500;
+      --dark: #1A1208;
+      --white: #FFFFFF;
+      --off-white: #FAFAF8;
+      --body: #78716C;
+      --muted: #A8A29E;
+      --border: #F0EDE8;
+      --green: #2E7D52;
+      --aws: #FF9500;
+      --gcp: #4A7FC1;
+      --font-serif: 'Inter', sans-serif;
+      --font-sans: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--body);
+      background: var(--white);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-serif);
+      color: var(--dark);
+      font-weight: 700;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .section-label {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(26, 18, 8, 0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 184, 85, 0.15);
+    }
+
+    .navbar .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .navbar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+
+    .navbar-logo .logo-dot { color: var(--amber); }
+
+    .logo-tagline {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.5;
+      letter-spacing: 0;
+    }
+
+    .navbar-links {
+      display: none;
+      list-style: none;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .navbar-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      transition: color 0.2s;
+    }
+
+    .navbar-links a:hover { color: var(--white); }
+
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--amber);
+      color: var(--dark);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      text-shadow: 0 0 8px rgba(26, 18, 8, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(255, 149, 0, 0.4);
+    }
+
+    .navbar-links .btn-cta { color: var(--dark); }
+
+    .menu-toggle {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .menu-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--white);
+      border-radius: 1px;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 64px;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 24px;
+      z-index: 99;
+    }
+
+    .mobile-menu.open { display: block; }
+
+    .mobile-menu a {
+      display: block;
+      padding: 14px 0;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--dark);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mobile-menu a:last-child { border-bottom: none; }
+
+    .btn-dark {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--dark);
+      color: var(--white);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-dark:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(26, 18, 8, 0.3);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--white);
+      color: var(--dark);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .btn-ghost:hover { border-color: var(--amber); }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 120px 0 60px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 36px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .hero-accent {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-weight: 700;
+      color: #5B7F6E;
+    }
+
+    .hero p {
+      max-width: 580px;
+      margin: 0 auto 32px;
+      font-size: 17px;
+    }
+
+    /* ── Explainer ── */
+    .explainer {
+      padding: 60px 0;
+      background: var(--off-white);
+    }
+
+    .explainer h2 {
+      font-size: 28px;
+      margin-bottom: 32px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .step-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--amber);
+      color: var(--dark);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .step-card h3 {
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+
+    .step-card p {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── Form ── */
+    .optimizer-section {
+      padding: 80px 0;
+    }
+
+    .optimizer-section h2 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .optimizer-section .intro {
+      margin-bottom: 40px;
+      font-size: 16px;
+      max-width: 680px;
+    }
+
+    .optimizer-form {
+      max-width: 860px;
+    }
+
+    .form-block {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .form-block > h3 {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .form-block > .block-hint {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0 16px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label,
+    .field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 6px;
+    }
+
+    .required { color: var(--amber); }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .stack-row input,
+    .stack-row select {
+      width: 100%;
+      padding: 11px 13px;
+      font-family: var(--font-sans);
+      font-size: 15px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--dark);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus,
+    .stack-row input:focus,
+    .stack-row select:focus {
+      border-color: var(--amber);
+    }
+
+    input::placeholder,
+    textarea::placeholder { color: var(--muted); }
+
+    .field-hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .form-error {
+      font-size: 13px;
+      color: #D32F2F;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .form-error.visible { display: block; }
+
+    .has-error input,
+    .has-error select { border-color: #D32F2F !important; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      position: relative;
+    }
+
+    .chip input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .chip span {
+      display: inline-block;
+      padding: 7px 14px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      user-select: none;
+    }
+
+    .chip input:checked + span {
+      background: #FFF3E0;
+      border-color: var(--amber);
+    }
+
+    .chip input:focus-visible + span {
+      outline: 2px solid var(--amber);
+      outline-offset: 2px;
+    }
+
+    /* Stack table: one row per layer, grouped and collapsible */
+    .layer-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .layer-group {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--off-white);
+    }
+
+    .layer-group > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      list-style: none;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .layer-group > summary::-webkit-details-marker { display: none; }
+
+    .layer-group > summary::before {
+      content: '\25B8';
+      color: var(--muted);
+      margin-right: 8px;
+      transition: transform 0.2s;
+    }
+
+    .layer-group[open] > summary::before { transform: rotate(90deg); }
+
+    .layer-group > summary .group-name { flex: 1; }
+
+    .layer-group > summary .group-meta {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .group-rows {
+      padding: 0 16px 12px;
+    }
+
+    .group-head { display: none; }
+
+    .stack-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 12px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .stack-row .layer-name {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .stack-row.extra .layer-name { color: var(--muted); font-weight: 500; }
+
+    .cost-input {
+      position: relative;
+    }
+
+    .cost-input .currency-symbol {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .stack-row .cost-input input { padding-left: 28px; }
+
+    .row-action {
+      width: 28px;
+      height: 28px;
+      flex: none;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--body);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .row-action:hover { border-color: var(--amber); color: var(--dark); }
+    .row-action.remove:hover { border-color: #D32F2F; color: #D32F2F; }
+
+    .stack-row.has-error input { border-color: #D32F2F; }
+
+    .stack-row input.autofilled,
+    .form-group input.autofilled,
+    .form-group select.autofilled,
+    .form-group textarea.autofilled {
+      background: #FFF7EB;
+      border-color: #FFD08A;
+    }
+
+    .stack-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .stack-total {
+      font-size: 14px;
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    .autofill-status {
+      display: none;
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #FFF7EB;
+      color: var(--dark);
+    }
+
+    .autofill-status.visible { display: block; }
+    .autofill-status.error { background: #FDECEC; color: #8E1F1F; }
+
+    .saved-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+
+    .link-button {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      color: var(--body);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    [hidden] { display: none !important; }
+
+    /* App mode: account bar, sign-in gate, saved reports */
+    .app-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      color: var(--body);
+    }
+
+    .app-bar strong { color: var(--dark); }
+
+    .signin-gate {
+      text-align: center;
+      padding: 40px 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .signin-gate h3 { font-size: 20px; margin-bottom: 8px; }
+    .signin-gate p { color: var(--body); max-width: 520px; margin: 0 auto 20px; }
+    .signin-gate .gate-note { font-size: 14px; color: var(--muted); margin: 20px auto 0; }
+
+    .gate-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .history-panel {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    .history-panel h3 { font-size: 18px; margin-bottom: 12px; }
+
+    .history-list { list-style: none; }
+
+    .history-list li {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px 16px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .history-list .history-meta { color: var(--muted); }
+    .history-list .history-saving { color: var(--green); font-weight: 600; }
+    .history-list .history-actions { display: inline-flex; align-items: center; gap: 12px; }
+    .history-list .link-button.danger { color: #C62828; }
+    .report-generated { margin-top: 6px; font-size: 13px; color: var(--muted); }
+
+    /* Upload */
+    .dropzone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--amber);
+      background: #FFFAF2;
+    }
+
+    .dropzone strong { color: var(--dark); }
+
+    .dropzone p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    .file-list {
+      list-style: none;
+      margin-top: 12px;
+    }
+
+    .file-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--dark);
+    }
+
+    .file-list .file-meta { color: var(--muted); font-size: 13px; }
+
+    .file-list .file-status-error { color: #C62828; font-size: 13px; }
+
+    .file-list button {
+      border: none;
+      background: none;
+      color: var(--body);
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: underline;
+    }
+
+    .privacy-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .form-submit .btn-cta {
+      width: 100%;
+      justify-content: center;
+      font-size: 16px;
+      padding: 15px 24px;
+    }
+
+    .form-submit .btn-cta:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--dark);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .progress-panel {
+      display: none;
+      margin-top: 20px;
+      padding: 20px 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--off-white);
+    }
+
+    .progress-panel.visible { display: block; }
+
+    .progress-panel h4 { font-size: 15px; margin-bottom: 12px; }
+
+    .progress-steps { list-style: none; }
+
+    .progress-steps li {
+      font-size: 14px;
+      padding: 6px 0 6px 28px;
+      position: relative;
+      color: var(--muted);
+    }
+
+    .progress-steps li::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 12px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+    }
+
+    .progress-steps li.active { color: var(--dark); font-weight: 500; }
+
+    .progress-steps li.active::before { border-color: var(--amber); background: #FFE0B2; }
+
+    .progress-steps li.done { color: var(--body); }
+
+    .progress-steps li.done::before { border-color: var(--green); background: var(--green); }
+
+    /* ── Report ── */
+    .report-section {
+      padding: 80px 0;
+      background: var(--off-white);
+      display: none;
+    }
+
+    .report-section.visible { display: block; }
+
+    .report-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .report-header h2 { font-size: 28px; }
+
+    .disclaimer-banner {
+      background: #FFF3E0;
+      border: 1px solid #FFE0B2;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #5D4037;
+    }
+
+    .disclaimer-banner strong { color: #E65100; }
+
+    .summary-card {
+      background: var(--dark);
+      color: rgba(255, 255, 255, 0.75);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card h3 {
+      color: var(--white);
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .summary-card .summary-text {
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 24px;
+      max-width: 760px;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .kpi {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .kpi .kpi-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .kpi .kpi-value {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--white);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi .kpi-value.accent { color: var(--amber); }
+
+    .kpi .kpi-sub { font-size: 12px; color: rgba(255, 255, 255, 0.55); }
+
+    .report-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .report-card h3 {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    .report-card > p { font-size: 15px; line-height: 1.8; }
+
+    .bullets { list-style: none; }
+
+    .bullets li {
+      padding: 8px 0 8px 20px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .bullets li:last-child { border-bottom: none; }
+
+    .bullets li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 17px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    .source-tag {
+      display: inline-block;
+      font-family: 'SFMono-Regular', Consolas, monospace;
+      font-size: 12px;
+      background: var(--off-white);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0 6px;
+      color: var(--body);
+      margin-left: 4px;
+    }
+
+    /* Comparison bars */
+    .compare-bars { display: flex; flex-direction: column; gap: 14px; }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 12px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .bar-label { color: var(--dark); font-weight: 500; }
+
+    .bar-track {
+      position: relative;
+      height: 28px;
+      background: var(--off-white);
+      border-radius: 6px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      min-width: 2px;
+    }
+
+    .bar-value {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Layer cards */
+    .layer-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .layer-card:last-child { margin-bottom: 0; }
+
+    .layer-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .layer-head .layer-name {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .layer-head h4 { font-size: 16px; }
+
+    .badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .badge-aws { background: #FFF3E0; color: #B45309; }
+    .badge-gcp { background: #E8F0FB; color: #2B5C9E; }
+    .badge-keep { background: #F0EDE8; color: #57534E; }
+    .badge-low { background: #E8F5E9; color: #2E7D32; }
+    .badge-medium { background: #FFF8E1; color: #A16207; }
+    .badge-high { background: #FFEBEE; color: #C62828; }
+    .badge-cancel,
+    .badge-downgrade,
+    .badge-consolidate,
+    .badge-switch { background: #E8F5E9; color: #2E7D32; }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .option {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+
+    .option.chosen { border-color: var(--amber); background: #FFFAF2; }
+
+    .option .option-provider {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .option .option-cost {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--dark);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .option .option-delta { font-size: 13px; font-weight: 600; }
+
+    .delta-good { color: var(--green); }
+    .delta-bad { color: #C62828; }
+
+    .option .option-services { color: var(--body); line-height: 1.6; }
+
+    .layer-notes { font-size: 14px; line-height: 1.7; }
+
+    .layer-notes strong { color: var(--dark); }
+
+    .roadmap { list-style: none; counter-reset: phase; }
+
+    .roadmap li {
+      padding: 12px 0 12px 40px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      counter-increment: phase;
+      font-size: 15px;
+    }
+
+    .roadmap li:last-child { border-bottom: none; }
+
+    .roadmap li::before {
+      content: counter(phase);
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--amber);
+      color: var(--dark);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .roadmap .phase-title { color: var(--dark); font-weight: 600; }
+
+    .roadmap .phase-time { color: var(--muted); font-size: 13px; margin-left: 6px; }
+
+    .teaser-card {
+      background: var(--amber);
+      border: none;
+      text-align: center;
+    }
+
+    .teaser-card h3 { color: var(--dark); }
+
+    .teaser-card p {
+      color: var(--dark);
+      opacity: 0.8;
+      margin-bottom: 20px;
+    }
+
+    .error-banner {
+      background: #FFEBEE;
+      border: 1px solid #FFCDD2;
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      color: #C62828;
+    }
+
+    .error-banner h3 { color: #C62828; margin-bottom: 8px; }
+
+    /* ── Bottom CTA ── */
+    .bottom-cta {
+      padding: 80px 0;
+      background: var(--amber);
+      text-align: center;
+    }
+
+    .bottom-cta h2 {
+      font-size: 34px;
+      margin-bottom: 12px;
+      color: var(--dark);
+    }
+
+    .bottom-cta p {
+      color: var(--dark);
+      opacity: 0.7;
+      margin-bottom: 32px;
+      font-size: 17px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 60px 0 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-top {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--dark);
+      letter-spacing: -0.02em;
+    }
+
+    .footer-logo .logo-dot { color: var(--amber); }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 14px;
+      color: var(--body);
+    }
+
+    .footer-links a:hover { color: var(--dark); }
+
+    .footer-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Cookie Banner ── */
+    .cookie-banner {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 16px 24px;
+      z-index: 200;
+      display: none;
+    }
+
+    .cookie-banner.show { display: block; }
+
+    .cookie-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .cookie-inner p {
+      font-size: 13px;
+      color: var(--body);
+      line-height: 1.6;
+    }
+
+    .cookie-inner p a {
+      color: var(--dark);
+      text-decoration: underline;
+    }
+
+    .cookie-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .cookie-accept {
+      background: var(--dark);
+      color: var(--white);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .cookie-decline {
+      background: transparent;
+      color: var(--body);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    /* ── Desktop ── */
+    @media (min-width: 768px) {
+      .hero { padding: 160px 0 80px; }
+      .hero h1 { font-size: 48px; }
+
+      .navbar-links { display: flex; }
+      .menu-toggle { display: none; }
+
+      .steps-grid { grid-template-columns: repeat(3, 1fr); }
+      .form-row { grid-template-columns: 1fr 1fr; }
+      .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+      .group-head,
+      .stack-row {
+        display: grid;
+        grid-template-columns: 240px 1fr 170px;
+        gap: 10px;
+        align-items: center;
+      }
+      .group-head {
+        padding: 0 0 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .stack-row { padding: 8px 0; }
+
+      .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+      .option-grid { grid-template-columns: repeat(3, 1fr); }
+      .option-grid.two { grid-template-columns: repeat(2, 1fr); }
+      .bar-row { grid-template-columns: 150px 1fr; }
+
+      .footer-top { flex-direction: row; justify-content: space-between; align-items: flex-start; }
+      .footer-bottom { flex-direction: row; justify-content: space-between; }
+
+      .cookie-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .over-limit { color: #C62828; font-weight: 600; }
+    .dup-warning { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #FFF4E5; border: 1px solid #F5C77E; font-size: 14px; line-height: 1.5; }
+    .dup-warning button { margin-top: 8px; }
+    .stack-row.dup-row .row-component { border-color: #E6A23C; background: #FFF9EF; }
+
+    /* Context Agent chat: right column on wide screens, a drawer on small ones */
+    .optimizer-layout { display: block; }
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .chat-panel[hidden] { display: none; }
+    .chat-head { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .chat-head h3 { font-size: 16px; margin: 0; }
+    .chat-head p { font-size: 12px; color: var(--muted); margin: 2px 0 0; line-height: 1.4; }
+    .chat-close { display: none; background: none; border: 0; font-size: 22px; line-height: 1; cursor: pointer; color: var(--body); }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+    .chat-empty { font-size: 14px; color: var(--body); line-height: 1.6; }
+    .chat-msg { max-width: 92%; padding: 9px 12px; border-radius: 10px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+    .chat-msg.user { align-self: flex-end; background: var(--dark); color: #fff; border-bottom-right-radius: 3px; }
+    .chat-msg.assistant { align-self: flex-start; background: var(--off-white); color: var(--dark); border: 1px solid var(--border); border-bottom-left-radius: 3px; }
+    .chat-msg.note { align-self: center; background: none; color: var(--muted); font-size: 12px; padding: 0; text-align: center; }
+    .chat-msg ul { margin: 4px 0 4px 18px; }
+    .chat-msg p + p, .chat-msg p + ul, .chat-msg ul + p { margin-top: 6px; }
+    .chat-cite { display: inline-block; font-size: 11px; background: #FFF3E0; color: #8D4E00; border-radius: 4px; padding: 0 5px; margin: 0 1px; white-space: nowrap; }
+    .chat-typing { align-self: flex-start; font-size: 13px; color: var(--muted); }
+    .chat-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 16px 10px; }
+    .chat-suggestions button { font: inherit; font-size: 12px; background: var(--white); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; cursor: pointer; color: var(--dark); }
+    .chat-suggestions button:hover { border-color: var(--amber); }
+    .chat-input { border-top: 1px solid var(--border); padding: 10px 12px; display: flex; gap: 8px; align-items: flex-end; }
+    .chat-input textarea { flex: 1; resize: none; font: inherit; font-size: 14px; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; max-height: 120px; min-height: 40px; color: var(--dark); }
+    .chat-input button { font: inherit; font-weight: 600; font-size: 14px; background: var(--amber); color: var(--dark); border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+    .chat-input button:disabled { opacity: .5; cursor: default; }
+    .chat-foot { font-size: 11px; color: var(--muted); padding: 0 12px 10px; }
+    .chat-fab { display: none; }
+
+    @media (min-width: 1100px) {
+      .optimizer-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 28px; align-items: start; }
+      .chat-panel { position: sticky; top: 92px; height: calc(100vh - 116px); max-height: 760px; }
+    }
+    @media (max-width: 1099px) {
+      .chat-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); z-index: 300; border-radius: 0; transform: translateX(100%); transition: transform .25s ease, visibility .25s; visibility: hidden; }
+      .chat-panel.open { transform: none; visibility: visible; box-shadow: -8px 0 24px rgba(0,0,0,.12); }
+      .chat-close { display: block; }
+      .chat-fab { display: inline-flex; position: fixed; right: 16px; bottom: 16px; z-index: 150; align-items: center; gap: 6px; background: var(--dark); color: #fff; border: 0; border-radius: 999px; padding: 12px 18px; font: inherit; font-weight: 600; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.2); cursor: pointer; }
+      .chat-fab[hidden] { display: none; }
+    }
+    @media print { .chat-panel, .chat-fab { display: none !important; } }
+    .pdf-holder { position: fixed; left: -10000px; top: 0; }
+    .pdf-export { width: 760px; background: #ffffff; }
+    .pdf-export .report-card,
+    .pdf-export .summary-card { margin-bottom: 16px; }
+    .pdf-export .pdf-footer {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media print {
+      .navbar, .mobile-menu, .hero, .explainer, .optimizer-section, .bottom-cta,
+      .footer, .cookie-banner, .no-print { display: none !important; }
+      .report-section { padding: 0; background: var(--white); }
+      .report-card, .layer-card, .summary-card { break-inside: avoid; }
+      .summary-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+<style>
+    /* Why-it-matters strip (shared look across pages) */
+    .vp { padding: 64px 0; background: #FAFAF8; border-top: 1px solid #F0EDE8; border-bottom: 1px solid #F0EDE8; }
+    .vp-inner { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .vp-label { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #A8A29E; margin-bottom: 12px; }
+    .vp-title { font-family: 'Inter', sans-serif; font-size: 26px; line-height: 1.25; color: #1A1208; margin-bottom: 28px; max-width: 720px; }
+    .vp-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    .vp-item h3 { font-family: 'Inter', sans-serif; font-size: 17px; color: #1A1208; margin-bottom: 6px; }
+    .vp-item h3::before { content: ''; display: block; width: 28px; height: 3px; background: #FF9500; border-radius: 2px; margin-bottom: 12px; }
+    .vp-item p { font-size: 15px; line-height: 1.65; color: #78716C; margin: 0; }
+    .vp-band { padding: 48px 0; background: #1A1208; }
+    .vp-band .vp-title { color: #FFFFFF; margin-bottom: 8px; }
+    .vp-band p { color: rgba(255,255,255,0.75); margin: 0 0 20px; max-width: 640px; font-size: 15px; line-height: 1.65; }
+    .vp-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .vp-btn { display: inline-block; padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; background: #FF9500; color: #1A1208; }
+    .vp-btn.ghost { background: transparent; color: #FFFFFF; border: 1px solid rgba(255,255,255,0.35); }
+    @media (min-width: 768px) { .vp-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; } .vp-title { font-size: 30px; } }
+  </style>
+<style>
+    /* Keep the header on one line on tablets */
+    .navbar-links a { white-space: nowrap; }
+    @media (max-width: 1099px) { .navbar .logo-tagline { display: none; } }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="https://www.t4tangerine.com/" class="navbar-logo">🍊T4Tangerine<span class="logo-dot">.</span> <span class="logo-tagline">| AI Strategy &amp; Consulting</span></a>
+      <ul class="navbar-links">
+        <li><a href="https://www.t4tangerine.com/aeo">AEO Marketing</a></li>
+        <li><a href="https://stack.t4tangerine.com/">Stack Optimizer</a></li>
+        <li><a href="https://www.t4tangerine.com/blog">Blog</a></li>
+        <li><a href="https://www.t4tangerine.com/funding">Funding</a></li>
+        <li><a href="https://www.t4tangerine.com/book" class="btn-cta">&#x1F34A; Let's T-4-Talk!</a></li>
+      </ul>
+      <button class="menu-toggle" aria-label="Menu" onclick="document.querySelector('.mobile-menu').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu">
+    <a href="https://www.t4tangerine.com/aeo" onclick="document.querySelector('.mobile-menu').classList.remove('open')">AEO Marketing</a>
+    <a href="https://stack.t4tangerine.com/" onclick="document.querySelector('.mobile-menu').classList.remove('open')">Stack Optimizer</a>
+    <a href="https://www.t4tangerine.com/blog" onclick="document.querySelector('.mobile-menu').classList.remove('open')">Blog</a>
+    <a href="https://www.t4tangerine.com/funding" onclick="document.querySelector('.mobile-menu').classList.remove('open')">Funding</a>
+    <a href="https://www.t4tangerine.com/book" onclick="document.querySelector('.mobile-menu').classList.remove('open')">Book a Call</a>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>Spend less on technology.<br><span class="hero-accent">Without slowing your teams down.</span></h1>
+      <p>Tell us what your teams run and what it costs. In two minutes you get a plain-language report: where you overpay, what to change, and how much you save next year.</p>
+      <a href="#optimizer" class="btn-cta">Get My Savings Report &#8595;</a>
+    </div>
+  </section>
+
+  <!-- Why it matters -->
+  <section class="vp">
+    <div class="vp-inner">
+      <p class="vp-label">Why it's worth two minutes</p>
+      <h2 class="vp-title">Find the money your tech budget is quietly losing.</h2>
+      <div class="vp-grid">
+        <div class="vp-item">
+          <h3>Stop paying twice</h3>
+          <p>Spot tools that do the same job, seats nobody uses and plans or servers bigger than you need.</p>
+        </div>
+        <div class="vp-item">
+          <h3>Know the real payoff</h3>
+          <p>See the yearly saving, the one-off cost of switching and how many months until each change pays for itself.</p>
+        </div>
+        <div class="vp-item">
+          <h3>Ready for your leadership team</h3>
+          <p>A plain-language report you can download as a PDF and share, with a step-by-step plan that respects your own rules.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="explainer">
+    <div class="container">
+      <p class="section-label">How it works</p>
+      <h2>From tech bills to a decision-ready plan.</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3>List what you pay for</h3>
+          <p>Add the tools and services your teams use and their monthly cost. Or upload documents and invoices, and we fill this in for you.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3>Add your rules</h3>
+          <p>Share your policies and goals, such as "customer data stays in the EU" or "cut costs by 20%". Every recommendation respects them.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3>Get a clear plan</h3>
+          <p>See what to keep and what to change, the yearly savings, the one-off cost of switching, when it pays for itself, and the steps to get there.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Optimizer Form -->
+  <section class="optimizer-section" id="optimizer">
+    <div class="container">
+      <p class="section-label">Free Stack Report</p>
+      <h2>Build your savings report</h2>
+      <p class="intro">Enter the monthly costs you know for the most accurate savings; we estimate the rest. A report takes one to two minutes.</p>
+
+      <!-- App mode only (stack.t4tangerine.com): account, sign-in and saved reports -->
+      <div class="app-bar" id="appBar" hidden></div>
+      <div class="signin-gate" id="signinGate" hidden>
+        <h3>Sign in to build and save your reports</h3>
+        <p>Your reports and the files you add are kept in your account, stored in the EU, so you can come back to them. Files are deleted automatically after 30 days.</p>
+        <div class="gate-actions">
+          <button type="button" class="btn-cta" id="signInBtn">Sign in</button>
+          <button type="button" class="btn-ghost" id="signUpBtn">Create a free account</button>
+        </div>
+      </div>
+      <div class="history-panel" id="historyPanel" hidden>
+        <h3>Your reports</h3>
+        <ul class="history-list" id="historyList"></ul>
+      </div>
+
+      <div class="optimizer-layout">
+      <form class="optimizer-form" id="optimizerForm" novalidate>
+
+        <div class="form-block">
+          <h3>Start with your files <span style="font-weight:500;color:var(--muted);font-size:14px;">(optional)</span></h3>
+          <p class="block-hint">Add invoices, budgets, policies, goals or notes about your systems. We read them and pre-fill the form below for you to check. PDF, Word, Markdown, text, CSV or JSON, up to 10 files.</p>
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload context files">
+            <strong>Drop files here or click to browse</strong>
+            <p>Text is extracted in your browser and sent only to pre-fill the form and generate this report.</p>
+          </div>
+          <input type="file" id="fileInput" multiple accept=".pdf,.docx,.md,.markdown,.txt,.csv,.json,.html,.htm" hidden>
+          <ul class="file-list" id="fileList"></ul>
+          <p class="form-error" id="fileError"></p>
+          <div class="autofill-status" id="autofillStatus" aria-live="polite"></div>
+        </div>
+
+        <div class="form-block">
+          <h3>About you</h3>
+          <p class="block-hint">We'll use your email to follow up on your report. No spam.</p>
+          <div class="form-row">
+            <div class="form-group" id="emailGroup">
+              <label for="email">Email <span class="required">*</span></label>
+              <input type="email" id="email" placeholder="you@company.com" required autocomplete="email">
+              <p class="form-error" id="emailError">Please enter a valid email address.</p>
+            </div>
+            <div class="form-group">
+              <label for="company">Company</label>
+              <input type="text" id="company" placeholder="Acme S.à r.l." autocomplete="organization">
+            </div>
+          </div>
+          <div class="form-row three">
+            <div class="form-group">
+              <label for="industry">Industry</label>
+              <input type="text" id="industry" placeholder="e.g. Fintech, SaaS, Retail">
+            </div>
+            <div class="form-group">
+              <label for="region">Preferred region</label>
+              <select id="region">
+                <option value="EU" selected>EU</option>
+                <option value="US">US</option>
+                <option value="Global">Global</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="currency">Currency</label>
+              <select id="currency">
+                <option value="EUR" selected>EUR (&euro;)</option>
+                <option value="USD">USD ($)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row three">
+            <div class="form-group">
+              <label for="teamSize">Team size</label>
+              <input type="number" id="teamSize" min="1" step="1" inputmode="numeric" placeholder="e.g. 32">
+            </div>
+            <div class="form-group">
+              <label for="teamSizeNextYear">Expected in 12 months</label>
+              <input type="number" id="teamSizeNextYear" min="1" step="1" inputmode="numeric" placeholder="Optional">
+            </div>
+            <div class="form-group">
+              <label for="horizon">Planning horizon</label>
+              <select id="horizon">
+                <option value="1">1 year</option>
+                <option value="3" selected>3 years</option>
+                <option value="5">5 years</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <span class="field-label">What matters most?</span>
+            <div class="chips" id="priorities">
+              <label class="chip"><input type="checkbox" value="cost" checked><span>Lowest cost</span></label>
+              <label class="chip"><input type="checkbox" value="performance"><span>Speed &amp; scale</span></label>
+              <label class="chip"><input type="checkbox" value="sovereignty"><span>Keep data in the EU</span></label>
+              <label class="chip"><input type="checkbox" value="lockin"><span>Avoid depending on one vendor</span></label>
+              <label class="chip"><input type="checkbox" value="lowops"><span>Less work for my teams</span></label>
+            </div>
+          </div>
+          <p class="saved-note">Your answers are saved in this browser so you can pick up where you left off. <button type="button" class="link-button" id="clearSaved">Clear the form</button></p>
+        </div>
+
+        <div class="form-block">
+          <h3>What you pay for today <span class="required">*</span></h3>
+          <p class="block-hint">Name the tools you pay for in each area and leave the rest empty. Add the monthly cost if you know it; if you don't, we'll estimate it. Use + to add a second tool in the same area.</p>
+          <div class="layer-groups" id="layerGroups"></div>
+          <p class="form-error" id="stackError">Add at least one tool you pay for.</p>
+          <div class="stack-footer">
+            <span class="stack-total" id="stackTotal"></span>
+          </div>
+          <div class="dup-warning" id="dupWarning" hidden></div>
+        </div>
+
+        <div class="form-block">
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="notes">Anything else?</label>
+            <textarea id="notes" placeholder="e.g. Traffic doubles every December. We must keep customer data in Luxembourg. Our team knows Kubernetes well."></textarea>
+          </div>
+        </div>
+
+        <div class="form-submit">
+          <button type="submit" class="btn-cta" id="submitBtn">
+            <span id="submitText">Get My Savings Report</span>
+            <span id="submitSpinner" class="spinner" style="display:none;"></span>
+          </button>
+          <p class="privacy-note">By submitting you agree to our <a href="https://www.t4tangerine.com/privacy" style="text-decoration:underline;">privacy policy</a>. Uploaded files aren't stored after your report is generated.</p>
+        </div>
+
+        <div class="progress-panel" id="progressPanel" aria-live="polite">
+          <h4>Building your report&hellip;</h4>
+          <ul class="progress-steps" id="progressSteps">
+            <li>Reading what you pay for</li>
+            <li>Checking your policies and goals</li>
+            <li>Comparing prices on AWS and Google Cloud</li>
+            <li>Calculating savings and switching costs</li>
+            <li>Writing your action plan</li>
+          </ul>
+        </div>
+      </form>
+
+      <aside class="chat-panel" id="chatPanel" aria-label="Ask about your files">
+        <div class="chat-head">
+          <div>
+            <h3>Ask about your files</h3>
+            <p>Our Context Agent answers only from your files and asks what your report needs.</p>
+          </div>
+          <button type="button" class="chat-close" id="chatClose" aria-label="Close">&times;</button>
+        </div>
+        <div class="chat-messages" id="chatMessages" aria-live="polite">
+          <p class="chat-empty" id="chatEmpty">Add your policies, goals, contracts or card statements on the left and I'll read them. Then ask me anything about them, or tell me things your report should know, like "Loom is already cancelled".</p>
+        </div>
+        <div class="chat-suggestions" id="chatSuggestions" hidden></div>
+        <form class="chat-input" id="chatForm">
+          <textarea id="chatText" rows="1" maxlength="1500" placeholder="Ask a question or add a detail…" aria-label="Message"></textarea>
+          <button type="submit" id="chatSend">Send</button>
+        </form>
+        <p class="chat-foot">What you tell me here is used in your report.</p>
+      </aside>
+      </div>
+      <button type="button" class="chat-fab" id="chatFab">&#x1F4AC; Ask about your files</button>
+    </div>
+  </section>
+
+  <!-- Report -->
+  <section class="report-section" id="reportSection">
+    <div class="container" id="reportContainer"></div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="bottom-cta">
+    <div class="container">
+      <h2>Want a second pair of eyes on your cloud bill?</h2>
+      <p>30 minutes. No pitch. Just a conversation about where your stack can get leaner.</p>
+      <a href="https://www.t4tangerine.com/book" class="btn-dark">&#x1F34A; Let's T-4-Talk!</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <span class="footer-logo">🍊T4Tangerine<span class="logo-dot">.</span> <span class="logo-tagline">| AI Strategy &amp; Consulting</span></span>
+        <ul class="footer-links">
+          <li><a href="https://www.t4tangerine.com/">Home</a></li>
+          <li><a href="https://www.t4tangerine.com/aeo">AEO Marketing</a></li>
+          <li><a href="https://stack.t4tangerine.com/">Stack Optimizer</a></li>
+          <li><a href="https://www.t4tangerine.com/blog">Blog</a></li>
+          <li><a href="https://www.t4tangerine.com/funding">Funding</a></li>
+          <li><a href="https://www.t4tangerine.com/book">Book a Call</a></li>
+          <li><a href="https://www.t4tangerine.com/privacy">Privacy Policy</a></li>
+        </ul>
+      </div>
+      <div class="footer-bottom">
+        <span>Luxembourg &#x1F1F1;&#x1F1FA; &middot; T4Tangerine.</span>
+        <span>&copy; 2025 T4Tangerine. All rights reserved.</span>
+        <span>No tracking cookies or analytics. See our <a href="https://www.t4tangerine.com/privacy" style="text-decoration:underline;">privacy policy</a>.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- GDPR Cookie Banner -->
+  <div class="cookie-banner show" id="cookieBanner">
+    <div class="cookie-inner">
+      <p>We use no tracking cookies or analytics. Data you submit through forms is stored to deliver our services. See our <a href="https://www.t4tangerine.com/privacy">privacy policy</a>.</p>
+      <div class="cookie-buttons">
+        <button class="cookie-accept" onclick="document.getElementById('cookieBanner').classList.remove('show'); localStorage.setItem('cookies','accepted')">Accept</button>
+        <button class="cookie-decline" onclick="document.getElementById('cookieBanner').classList.remove('show'); localStorage.setItem('cookies','declined')">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      if (localStorage.getItem('cookies')) {
+        document.getElementById('cookieBanner').classList.remove('show');
+      }
+    } catch (e) {}
+
+    // name = value sent to the API; label = what people see
+    var LAYERS = [
+      { name: 'Frontend & Hosting', label: 'Website & app hosting', example: 'e.g. Vercel Pro, Netlify' },
+      { name: 'Compute & Backend', label: 'Servers & back end', example: 'e.g. Heroku, DigitalOcean servers' },
+      { name: 'Containers & Orchestration', label: 'Container platform (e.g. Kubernetes)', example: 'e.g. Kubernetes on Hetzner' },
+      { name: 'Serverless & Functions', label: 'Pay-per-use functions', example: 'e.g. Cloudflare Workers' },
+      { name: 'Relational Database', label: 'Main database', example: 'e.g. Heroku Postgres' },
+      { name: 'NoSQL Database', label: 'Other databases', example: 'e.g. MongoDB Atlas' },
+      { name: 'Cache', label: 'Speed-up cache', example: 'e.g. Redis Cloud' },
+      { name: 'Object Storage', label: 'File & media storage', example: 'e.g. Backblaze, Dropbox' },
+      { name: 'CDN & Networking', label: 'Content delivery & network', example: 'e.g. Cloudflare Pro' },
+      { name: 'Authentication', label: 'User login & identity', example: 'e.g. Auth0, Okta' },
+      { name: 'Messaging & Events', label: 'Messaging between systems', example: 'e.g. CloudAMQP, Kafka' },
+      { name: 'Data & Analytics', label: 'Data & reporting', example: 'e.g. Snowflake, Looker' },
+      { name: 'AI & ML', label: 'AI services', example: 'e.g. OpenAI API, ChatGPT Team' },
+      { name: 'Observability', label: 'Monitoring & logs', example: 'e.g. Datadog, New Relic' },
+      { name: 'CI/CD', label: 'Build & release tools', example: 'e.g. GitHub Actions, CircleCI' },
+      { name: 'Other', label: 'Other tools & subscriptions', example: 'e.g. Slack, Notion, Jira' }
+    ];
+
+    var MAX_FILES = 10;
+    var MAX_FILE_CHARS = 200000;
+    var MAX_TOTAL_CHARS = 600000;
+
+    var form = document.getElementById('optimizerForm');
+    var currencySelect = document.getElementById('currency');
+    var uploadedDocs = [];
+    var lastReport = null;
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function currencySymbol() {
+      return currencySelect.value === 'USD' ? '$' : '€';
+    }
+
+    // Team size fields: a whole number of people, or null
+    function wholeNumber(raw) {
+      var n = Number(raw);
+      return raw !== '' && Number.isInteger(n) && n > 0 ? n : null;
+    }
+
+    // e.g. "12 Oct 2026, 14:32" in the viewer's time zone
+    function formatDateTime(value) {
+      var d = new Date(value);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleString('en-IE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatMoney(n, currency) {
+      try {
+        return new Intl.NumberFormat('en-IE', {
+          style: 'currency',
+          currency: currency || currencySelect.value,
+          maximumFractionDigits: 0
+        }).format(n || 0);
+      } catch (e) {
+        return (currency === 'USD' ? '$' : '€') + Math.round(n || 0);
+      }
+    }
+
+    // ── Stack table: one row per layer, in collapsible groups ──
+    var MAX_TOOLS = 30; // same limit as the report API
+    var GROUPS = [
+      { name: 'Websites & delivery', layers: ['Frontend & Hosting', 'CDN & Networking'], open: true },
+      { name: 'Servers & computing', layers: ['Compute & Backend', 'Containers & Orchestration', 'Serverless & Functions'], open: true },
+      { name: 'Data & storage', layers: ['Relational Database', 'NoSQL Database', 'Cache', 'Object Storage', 'Data & Analytics'], open: true },
+      { name: 'Team tools & operations', layers: ['Authentication', 'Messaging & Events', 'AI & ML', 'Observability', 'CI/CD', 'Other'], open: true }
+    ];
+
+    function layerMeta(name) {
+      for (var i = 0; i < LAYERS.length; i++) {
+        if (LAYERS[i].name === name) return LAYERS[i];
+      }
+      return LAYERS[LAYERS.length - 1];
+    }
+
+    function rowFilled(row) {
+      return !!(row.querySelector('.row-component').value.trim() || row.querySelector('.row-cost').value);
+    }
+
+    // extra = a second (third, ...) component in the same layer
+    function addLayerRow(layerName, extra, afterRow) {
+      var meta = layerMeta(layerName);
+      var group = document.querySelector('.group-rows[data-layers~="' + layerName.replace(/[^A-Za-z]/g, '') + '"]');
+      var row = document.createElement('div');
+      row.className = 'stack-row' + (extra ? ' extra' : '');
+      row.dataset.layer = layerName;
+      row.innerHTML =
+        '<div class="layer-name"><span>' + (extra ? '+ ' : '') + escapeHtml(meta.label) + '</span>' +
+          (extra
+            ? '<button type="button" class="row-action remove" aria-label="Remove this ' + escapeHtml(meta.label) + ' tool">&times;</button>'
+            : '<button type="button" class="row-action add" aria-label="Add another ' + escapeHtml(meta.label) + ' tool" title="Add another">+</button>') +
+        '</div>' +
+        '<input type="text" class="row-component" placeholder="' + escapeHtml(meta.example) + '" aria-label="' + escapeHtml(meta.label) + ': tool or service">' +
+        '<div class="cost-input"><span class="currency-symbol">' + currencySymbol() + '</span><input type="number" class="row-cost" min="0" step="1" inputmode="decimal" placeholder="We\'ll estimate" aria-label="' + escapeHtml(meta.label) + ': monthly cost, optional"></div>';
+
+      row.querySelector('.row-action').addEventListener('click', function() {
+        if (extra) {
+          row.remove();
+          updateTotal();
+          saveForm();
+        } else {
+          var siblings = group.querySelectorAll('.stack-row[data-layer="' + layerName + '"]');
+          addLayerRow(layerName, true, siblings[siblings.length - 1]).querySelector('.row-component').focus();
+        }
+      });
+      row.querySelectorAll('input').forEach(function(input) {
+        input.addEventListener('input', function() {
+          input.classList.remove('autofilled');
+          delete row.dataset.auto;
+          updateTotal();
+          saveForm();
+        });
+      });
+
+      if (afterRow) afterRow.after(row); else group.appendChild(row);
+      return row;
+    }
+
+    function buildStackTable() {
+      var container = document.getElementById('layerGroups');
+      GROUPS.forEach(function(g) {
+        var details = document.createElement('details');
+        details.className = 'layer-group';
+        details.open = g.open;
+        details.innerHTML =
+          '<summary><span class="group-name">' + escapeHtml(g.name) + '</span><span class="group-meta"></span></summary>' +
+          '<div class="group-rows" data-layers="' + g.layers.map(function(l) { return l.replace(/[^A-Za-z]/g, ''); }).join(' ') + '">' +
+            '<div class="group-head"><span>Area</span><span>Tool or service you use</span><span>Monthly cost (optional)</span></div>' +
+          '</div>';
+        container.appendChild(details);
+        g.layers.forEach(function(l) { addLayerRow(l, false); });
+      });
+    }
+
+    function allRows() {
+      return document.querySelectorAll('#layerGroups .stack-row');
+    }
+
+    // Put a component into the first empty row of its layer, or a new extra row
+    function placeComponent(c, markAutofilled) {
+      var rows = document.querySelectorAll('#layerGroups .stack-row[data-layer="' + c.layer + '"]');
+      var target = null;
+      rows.forEach(function(r) { if (!target && !rowFilled(r)) target = r; });
+      if (!target) target = addLayerRow(c.layer, true, rows[rows.length - 1]);
+      var fields = [
+        ['.row-component', c.component],
+        ['.row-cost', c.monthlyCost == null || !isFinite(c.monthlyCost) ? '' : String(c.monthlyCost)]
+      ];
+      fields.forEach(function(f) {
+        var input = target.querySelector(f[0]);
+        input.value = f[1];
+        input.classList.toggle('autofilled', !!(markAutofilled && f[1] !== ''));
+      });
+      if (markAutofilled) target.dataset.auto = '1'; else delete target.dataset.auto;
+      target.closest('details').open = true;
+      return target;
+    }
+
+    // Empty a row; extra rows are removed
+    function clearRow(row) {
+      if (row.classList.contains('extra')) { row.remove(); return; }
+      row.querySelectorAll('input').forEach(function(input) { input.value = ''; input.classList.remove('autofilled'); });
+      delete row.dataset.auto;
+    }
+
+    // Loose name key so "Slack Pro" and "Slack (Business+)" count as the same tool
+    var GENERIC_WORDS = ['pro', 'plus', 'business', 'team', 'teams', 'enterprise', 'standard', 'premium', 'plan', 'plans',
+      'starter', 'basic', 'growth', 'subscription', 'seats', 'seat', 'licence', 'license', 'licenses', 'app', 'the', 'inc', 'ltd', 'monthly'];
+    function toolKey(name) {
+      return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+        .replace(/\([^)]*\)/g, ' ').split(/[^a-z0-9]+/)
+        .filter(function(w) { return w && GENERIC_WORDS.indexOf(w) === -1; }).join(' ');
+    }
+    function sameTool(a, b) {
+      var ka = toolKey(a.component), kb = toolKey(b.component);
+      if (!ka || !kb) return false;
+      if (ka === kb) return true;
+      if (a.layer === b.layer && ka.split(' ')[0] === kb.split(' ')[0]) return true;
+      var shorter = ka.length < kb.length ? ka : kb, longer = shorter === ka ? kb : ka;
+      return shorter.length >= 4 && (' ' + longer + ' ').indexOf(' ' + shorter + ' ') !== -1;
+    }
+
+    function readComponents() {
+      var list = [];
+      allRows().forEach(function(row) {
+        var component = row.querySelector('.row-component').value.trim();
+        var costRaw = row.querySelector('.row-cost').value;
+        if (!component && !costRaw) return;
+        list.push({
+          row: row,
+          layer: row.dataset.layer,
+          component: component,
+          monthlyCost: costRaw === '' ? null : Number(costRaw)
+        });
+      });
+      return list;
+    }
+
+    function updateTotal() {
+      var total = 0, toEstimate = 0, count = 0;
+      document.querySelectorAll('#layerGroups .layer-group').forEach(function(group) {
+        var filled = 0, subtotal = 0;
+        group.querySelectorAll('.stack-row').forEach(function(row) {
+          if (!rowFilled(row)) return;
+          filled++;
+          count++;
+          var raw = row.querySelector('.row-cost').value;
+          if (raw === '') { toEstimate++; return; }
+          var v = Number(raw);
+          if (isFinite(v) && v > 0) subtotal += v;
+        });
+        total += subtotal;
+        group.querySelector('.group-meta').textContent = filled
+          ? filled + ' filled' + (subtotal > 0 ? ' · ' + formatMoney(subtotal) + '/mo' : '')
+          : '';
+      });
+      var parts = [];
+      if (total > 0) parts.push('You entered ' + formatMoney(total) + ' / month');
+      if (toEstimate) parts.push(toEstimate + ' cost' + (toEstimate === 1 ? '' : 's') + ' to estimate');
+      if (count > MAX_TOOLS) parts.push(count + ' tools listed: please remove ' + (count - MAX_TOOLS) + ' (up to ' + MAX_TOOLS + ' per report)');
+      var totalEl = document.getElementById('stackTotal');
+      totalEl.textContent = parts.join(' · ');
+      totalEl.classList.toggle('over-limit', count > MAX_TOOLS);
+      showDuplicates();
+    }
+
+    // Same tool listed twice (e.g. "Zoom" and "Zoom Pro"): each would be counted
+    // as a separate cost and "cancelling the duplicate" would look like a saving
+    var TOOL_ALIASES = { 'amazon web services': 'aws', 'amazon aws': 'aws', 'google cloud platform': 'gcp', 'google cloud': 'gcp', 'microsoft azure': 'azure' };
+    function dupKey(name) {
+      var k = toolKey(name);
+      return TOOL_ALIASES[k] || k;
+    }
+    function findDuplicates() {
+      var seen = {}, pairs = [];
+      readComponents().forEach(function(c) {
+        var k = dupKey(c.component);
+        if (!k) return;
+        if (seen[k]) pairs.push([seen[k], c]); else seen[k] = c;
+      });
+      return pairs;
+    }
+    function showDuplicates() {
+      var el = document.getElementById('dupWarning');
+      var pairs = findDuplicates();
+      allRows().forEach(function(r) { r.classList.remove('dup-row'); });
+      if (!pairs.length) { el.hidden = true; el.innerHTML = ''; return; }
+      pairs.forEach(function(p) { p[0].row.classList.add('dup-row'); p[1].row.classList.add('dup-row'); });
+      el.hidden = false;
+      el.innerHTML = '<strong>These look like the same tool listed twice:</strong> ' +
+        pairs.map(function(p) { return escapeHtml(p[0].component) + ' and ' + escapeHtml(p[1].component); }).join('; ') +
+        '. Each row counts as a separate cost, which makes the report overstate your spend and savings. ' +
+        'If they really are separate subscriptions, add a word to tell them apart (e.g. "Zoom for sales").' +
+        '<br><button type="button" class="btn-ghost" id="removeDupBtn">Remove the duplicates</button>';
+      document.getElementById('removeDupBtn').addEventListener('click', removeDuplicates);
+    }
+    // Keep the row with a cost (or the first one) and clear the other
+    function removeDuplicates() {
+      findDuplicates().forEach(function(p) {
+        var drop = p[1].monthlyCost == null && p[0].monthlyCost != null ? p[1]
+          : p[0].monthlyCost == null && p[1].monthlyCost != null ? p[0] : p[1];
+        clearRow(drop.row);
+      });
+      updateTotal();
+      saveForm();
+    }
+
+    currencySelect.addEventListener('change', function() {
+      document.querySelectorAll('.currency-symbol').forEach(function(el) { el.textContent = currencySymbol(); });
+      updateTotal();
+    });
+
+    buildStackTable();
+
+    // ── Context file upload ──
+    var dropzone = document.getElementById('dropzone');
+    var fileInput = document.getElementById('fileInput');
+    var fileList = document.getElementById('fileList');
+    var fileError = document.getElementById('fileError');
+    var scriptPromises = {};
+
+    function loadScript(src) {
+      if (!scriptPromises[src]) {
+        scriptPromises[src] = new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          s.src = src;
+          s.onload = resolve;
+          s.onerror = function() { delete scriptPromises[src]; reject(new Error('Could not load ' + src)); };
+          document.head.appendChild(s);
+        });
+      }
+      return scriptPromises[src];
+    }
+
+    function extractPdf(file) {
+      var base = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/';
+      return loadScript(base + 'pdf.min.js').then(function() {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = base + 'pdf.worker.min.js';
+        return file.arrayBuffer();
+      }).then(function(buf) {
+        return window.pdfjsLib.getDocument({ data: buf }).promise;
+      }).then(function(pdf) {
+        var pages = [];
+        for (var i = 1; i <= pdf.numPages; i++) pages.push(i);
+        return pages.reduce(function(chain, n) {
+          return chain.then(function(text) {
+            return pdf.getPage(n).then(function(page) {
+              return page.getTextContent();
+            }).then(function(content) {
+              return text + content.items.map(function(it) { return it.str; }).join(' ') + '\n\n';
+            });
+          });
+        }, Promise.resolve(''));
+      });
+    }
+
+    function extractDocx(file) {
+      return loadScript('https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js').then(function() {
+        return file.arrayBuffer();
+      }).then(function(buf) {
+        return window.mammoth.extractRawText({ arrayBuffer: buf });
+      }).then(function(result) {
+        return result.value;
+      });
+    }
+
+    function extractHtml(file) {
+      return file.text().then(function(html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.body ? doc.body.innerText || doc.body.textContent : '';
+      });
+    }
+
+    function extractText(file) {
+      var name = file.name.toLowerCase();
+      if (name.endsWith('.pdf')) return extractPdf(file);
+      if (name.endsWith('.docx')) return extractDocx(file);
+      if (name.endsWith('.html') || name.endsWith('.htm')) return extractHtml(file);
+      if (/\.(md|markdown|txt|csv|json)$/.test(name)) return file.text();
+      return Promise.reject(new Error('Unsupported file type'));
+    }
+
+    function totalChars() {
+      return uploadedDocs.reduce(function(s, d) { return s + (d.text ? d.text.length : 0); }, 0);
+    }
+
+    function renderFiles() {
+      if (typeof maybeChatKickoff === 'function') setTimeout(maybeChatKickoff, 0);
+      fileList.innerHTML = '';
+      uploadedDocs.forEach(function(doc, i) {
+        var li = document.createElement('li');
+        var status;
+        if (doc.status === 'reading') status = '<span class="file-meta">Reading&hellip;</span>';
+        else if (doc.status === 'error') status = '<span class="file-status-error">' + escapeHtml(doc.error) + '</span>';
+        else status = '<span class="file-meta">' + (doc.text.length < 1000 ? doc.text.length + ' characters' : Math.round(doc.text.length / 1000) + 'k characters') + (doc.truncated ? ' (truncated)' : '') + '</span>';
+        if (doc.upload === 'uploading') status += ' <span class="file-meta">&middot; uploading&hellip;</span>';
+        else if (doc.upload === 'done') status += ' <span class="file-meta">&middot; saved</span>';
+        else if (doc.upload === 'skipped') status += ' <span class="file-meta">&middot; used to pre-fill only</span>';
+        else if (doc.upload === 'error') status += ' <span class="file-status-error">&middot; upload failed</span>';
+        li.innerHTML = '<span>' + escapeHtml(doc.name) + ' &middot; ' + status + '</span><button type="button" aria-label="Remove ' + escapeHtml(doc.name) + '">Remove</button>';
+        li.querySelector('button').addEventListener('click', function() {
+          uploadedDocs.splice(i, 1);
+          renderFiles();
+        });
+        fileList.appendChild(li);
+      });
+    }
+
+    function showFileError(msg) {
+      fileError.textContent = msg;
+      fileError.classList.toggle('visible', !!msg);
+    }
+
+    function handleFiles(files) {
+      showFileError('');
+      Array.prototype.forEach.call(files, function(file) {
+        if (uploadedDocs.length >= MAX_FILES) {
+          showFileError('You can upload up to ' + MAX_FILES + ' files.');
+          return;
+        }
+        if (file.size > 15 * 1024 * 1024) {
+          showFileError(file.name + ' is larger than 15 MB.');
+          return;
+        }
+        var doc = { name: file.name, text: '', status: 'reading' };
+        uploadedDocs.push(doc);
+        renderFiles();
+        extractText(file).then(function(text) {
+          text = (text || '').replace(/\u0000/g, '').trim();
+          if (!text) throw new Error('No readable text found');
+          if (text.length > MAX_FILE_CHARS) {
+            text = text.slice(0, MAX_FILE_CHARS);
+            doc.truncated = true;
+          }
+          var room = MAX_TOTAL_CHARS - totalChars();
+          if (room <= 0) throw new Error('Total upload limit reached');
+          if (text.length > room) {
+            text = text.slice(0, room);
+            doc.truncated = true;
+          }
+          doc.text = text;
+          doc.status = 'ready';
+          renderFiles();
+          maybeAutofill();
+          if (APP_MODE) uploadDoc(file, doc);
+        }).catch(function(err) {
+          doc.status = 'error';
+          doc.error = err && err.message === 'Unsupported file type' ? 'Unsupported file type' : (err && err.message) || 'Could not read file';
+          renderFiles();
+          maybeAutofill();
+        });
+      });
+    }
+
+    dropzone.addEventListener('click', function() { fileInput.click(); });
+    dropzone.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+    });
+    fileInput.addEventListener('change', function() {
+      handleFiles(fileInput.files);
+      fileInput.value = '';
+    });
+    ['dragenter', 'dragover'].forEach(function(evt) {
+      dropzone.addEventListener(evt, function(e) { e.preventDefault(); dropzone.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(function(evt) {
+      dropzone.addEventListener(evt, function(e) { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    });
+    dropzone.addEventListener('drop', function(e) {
+      if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+    });
+
+    // ── Remember answers in this browser ──
+    var STORAGE_KEY = 't4t.stackOptimizer.form.v1';
+    var regionSelect = document.getElementById('region');
+    var prioritiesTouched = false;
+    var restoring = false;
+    var saveTimer = null;
+
+    regionSelect.addEventListener('change', function() { regionSelect.dataset.touched = '1'; });
+    document.getElementById('priorities').addEventListener('change', function() { prioritiesTouched = true; });
+
+    function saveForm() {
+      if (restoring) return;
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(function() {
+        var data = {
+          email: document.getElementById('email').value.trim(),
+          company: document.getElementById('company').value.trim(),
+          industry: document.getElementById('industry').value.trim(),
+          teamSize: document.getElementById('teamSize').value,
+          teamSizeNextYear: document.getElementById('teamSizeNextYear').value,
+          region: regionSelect.value,
+          regionTouched: !!regionSelect.dataset.touched,
+          currency: currencySelect.value,
+          horizon: document.getElementById('horizon').value,
+          priorities: selectedPriorities(),
+          prioritiesTouched: prioritiesTouched,
+          notes: document.getElementById('notes').value,
+          components: readComponents().map(function(c) {
+            return { layer: c.layer, component: c.component, monthlyCost: c.monthlyCost, auto: c.row.dataset.auto === '1' };
+          })
+        };
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {}
+      }, 400);
+    }
+
+    function setPriorities(list) {
+      document.querySelectorAll('#priorities input').forEach(function(el) { el.checked = list.indexOf(el.value) !== -1; });
+    }
+
+    function restoreForm() {
+      var data;
+      try { data = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch (e) { data = null; }
+      if (!data || typeof data !== 'object') return;
+      restoring = true;
+      ['email', 'company', 'industry', 'notes', 'teamSize', 'teamSizeNextYear'].forEach(function(id) {
+        if (typeof data[id] === 'string') document.getElementById(id).value = data[id];
+      });
+      if (['EU', 'US', 'Global'].indexOf(data.region) !== -1) regionSelect.value = data.region;
+      if (data.regionTouched) regionSelect.dataset.touched = '1';
+      if (data.currency === 'USD' || data.currency === 'EUR') {
+        currencySelect.value = data.currency;
+        currencySelect.dispatchEvent(new Event('change'));
+      }
+      if (['1', '3', '5'].indexOf(String(data.horizon)) !== -1) document.getElementById('horizon').value = String(data.horizon);
+      if (Array.isArray(data.priorities)) setPriorities(data.priorities);
+      prioritiesTouched = !!data.prioritiesTouched;
+      (Array.isArray(data.components) ? data.components : []).forEach(function(c) {
+        if (c && typeof c.layer === 'string' && typeof c.component === 'string') {
+          var row = placeComponent({ layer: layerMeta(c.layer).name, component: c.component, monthlyCost: c.monthlyCost }, false);
+          if (c.auto) row.dataset.auto = '1';
+        }
+      });
+      restoring = false;
+      updateTotal();
+    }
+
+    form.addEventListener('input', function(e) {
+      if (e.target.classList) e.target.classList.remove('autofilled');
+      saveForm();
+    });
+    form.addEventListener('change', saveForm);
+
+    document.getElementById('clearSaved').addEventListener('click', function() {
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      window.location.hash = 'optimizer';
+      window.location.reload();
+    });
+
+    restoreForm();
+
+    // ── Pre-fill the form from uploaded files ──
+    var autofillStatus = document.getElementById('autofillStatus');
+    var lastAutofillKey = '';
+
+    function showAutofill(message, isError) {
+      autofillStatus.textContent = message;
+      autofillStatus.classList.toggle('visible', !!message);
+      autofillStatus.classList.toggle('error', !!isError);
+    }
+
+    function maybeAutofill() {
+      if (uploadedDocs.some(function(d) { return d.status === 'reading'; })) return;
+      var ready = uploadedDocs.filter(function(d) { return d.status === 'ready'; });
+      if (!ready.length) return;
+      var key = ready.map(function(d) { return d.name + ':' + d.text.length; }).join('|');
+      if (key === lastAutofillKey) return;
+      lastAutofillKey = key;
+
+      showAutofill('Reading your files to pre-fill the form…');
+      postJson('/api/stack-autofill', '/autofill', {
+        currency: currencySelect.value,
+        documents: ready.map(function(d) { return { name: d.name, text: d.text }; })
+      })
+      .then(function(data) {
+        if (key !== lastAutofillKey) return; // files changed meanwhile; a newer request is running
+        if (!data || data.error) throw new Error(data && data.error);
+        applyAutofill(data);
+      })
+      .catch(function(err) {
+        if (key !== lastAutofillKey) return;
+        showAutofill((err && err.message) || 'We couldn\'t read your files to pre-fill the form. You can fill it in by hand.', true);
+      });
+    }
+
+    function fillIfEmpty(id, value) {
+      var el = document.getElementById(id);
+      if (!value || el.value.trim()) return 0;
+      el.value = value;
+      el.classList.add('autofilled');
+      return 1;
+    }
+
+    function applyAutofill(data) {
+      var filled = 0;
+      filled += fillIfEmpty('company', data.company);
+      filled += fillIfEmpty('industry', data.industry);
+      filled += fillIfEmpty('teamSize', data.teamSize ? String(data.teamSize) : '');
+      filled += fillIfEmpty('teamSizeNextYear', data.teamSizeNextYear ? String(data.teamSizeNextYear) : '');
+      filled += fillIfEmpty('notes', data.notes);
+      if (data.region && !regionSelect.dataset.touched && regionSelect.value !== data.region) {
+        regionSelect.value = data.region;
+        regionSelect.classList.add('autofilled');
+        filled++;
+      }
+      if (!prioritiesTouched && data.priorities && data.priorities.length) {
+        setPriorities(data.priorities);
+        filled++;
+      }
+
+      // Rows from an earlier pre-fill that you haven't edited are replaced, not added to
+      var incoming = data.components || [];
+      if (incoming.length) {
+        Array.prototype.slice.call(allRows()).forEach(function(r) { if (r.dataset.auto === '1') clearRow(r); });
+      }
+      var existing = readComponents();
+      var added = 0, missingCost = 0;
+      incoming.forEach(function(c) {
+        if (existing.some(function(e) { return sameTool(e, c); })) return;
+        if (existing.length >= MAX_TOOLS) return;
+        existing.push({ row: placeComponent(c, true), layer: c.layer, component: c.component });
+        added++;
+        if (c.monthlyCost == null) missingCost++;
+      });
+
+      updateTotal();
+      saveForm();
+
+      if (!filled && !added) {
+        showAutofill('We read your files but found nothing new to pre-fill. Please fill in the form below.');
+        return;
+      }
+      var parts = [];
+      if (added) parts.push(added + ' tool' + (added === 1 ? '' : 's'));
+      if (filled) parts.push(filled + ' detail' + (filled === 1 ? '' : 's') + ' about you');
+      showAutofill('Pre-filled ' + parts.join(' and ') + ' from your files. Highlighted fields came from your files, so please check them' +
+        (missingCost ? '. We\'ll estimate the cost of ' + missingCost + ' tool' + (missingCost === 1 ? '' : 's') + ' unless you add it' : '') + '.');
+    }
+
+    // ── Chat with the Context Agent ──
+    var chatPanel = document.getElementById('chatPanel');
+    var chatMessagesEl = document.getElementById('chatMessages');
+    var chatForm = document.getElementById('chatForm');
+    var chatText = document.getElementById('chatText');
+    var chatSend = document.getElementById('chatSend');
+    var chatFab = document.getElementById('chatFab');
+    var chatSuggestions = document.getElementById('chatSuggestions');
+    var CHAT_MAX = 20;
+    var chatMessages = [];      // { role: 'user' | 'assistant', text }
+    var chatBusy = false;
+    var chatKickoffKey = '';
+    var SUGGESTIONS = [
+      'Where are we allowed to store customer data?',
+      'Which contracts renew in the next 6 months?',
+      'What are our cost targets for next year?'
+    ];
+
+    function chatDocsReady() {
+      if (uploadedDocs.some(function(d) { return d.status === 'reading'; })) return null;
+      if (APP_MODE && uploadedDocs.some(function(d) { return d.upload === 'uploading'; })) return null;
+      return uploadedDocs.filter(function(d) { return APP_MODE ? (d.upload === 'done' && d.key) : d.status === 'ready'; });
+    }
+
+    // Plain text with [file#n] citations, **bold** and "- " bullets
+    function chatHtml(text) {
+      var lines = escapeHtml(text).split(/\n/);
+      var html = '', inList = false;
+      lines.forEach(function(line) {
+        line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+          .replace(/\[([^\[\]\n]{1,140}#\d+(?:\s*[,;]\s*[^\[\]\n,;]{1,140}#\d+)*)\]/g, function(m, ids) {
+            return ids.split(/\s*[,;]\s*/).map(function(id) { return '<span class="chat-cite">' + id + '</span>'; }).join(' ');
+          });
+        var bullet = /^\s*(?:[-•*]|\d+\.)\s+(.*)$/.exec(line);
+        if (bullet) {
+          if (!inList) { html += '<ul>'; inList = true; }
+          html += '<li>' + bullet[1] + '</li>';
+          return;
+        }
+        if (inList) { html += '</ul>'; inList = false; }
+        if (line.trim()) html += '<p>' + line + '</p>';
+      });
+      return html + (inList ? '</ul>' : '');
+    }
+
+    function renderChat(status) {
+      chatMessagesEl.innerHTML = '';
+      if (!chatMessages.length && !status) {
+        chatMessagesEl.innerHTML = '<p class="chat-empty">' + (uploadedDocs.length
+          ? 'Reading your files&hellip; ask me anything about them, or tell me things your report should know.'
+          : 'Add your policies, goals, contracts or card statements on the left and I\'ll read them. Then ask me anything about them, or tell me things your report should know, like "Loom is already cancelled".') + '</p>';
+      }
+      chatMessages.forEach(function(m) {
+        var div = document.createElement('div');
+        div.className = 'chat-msg ' + m.role;
+        if (m.role === 'user') div.textContent = m.text; else div.innerHTML = chatHtml(m.text);
+        chatMessagesEl.appendChild(div);
+      });
+      if (status) {
+        var st = document.createElement('div');
+        st.className = 'chat-typing';
+        st.textContent = status;
+        chatMessagesEl.appendChild(st);
+      }
+      var ready = chatDocsReady();
+      var showSuggestions = !chatBusy && ready && ready.length && !chatMessages.some(function(m) { return m.role === 'user'; });
+      chatSuggestions.hidden = !showSuggestions;
+      if (showSuggestions && !chatSuggestions.children.length) {
+        SUGGESTIONS.forEach(function(q) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = q;
+          b.addEventListener('click', function() { sendChat(q); });
+          chatSuggestions.appendChild(b);
+        });
+      }
+      chatSend.disabled = chatBusy;
+      chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    function chatFormSnapshot() {
+      return {
+        company: document.getElementById('company').value.trim(),
+        teamSize: wholeNumber(document.getElementById('teamSize').value),
+        currency: currencySelect.value,
+        tools: readComponents().map(function(c) { return { name: c.component, monthlyCost: c.monthlyCost }; })
+      };
+    }
+
+    function chatRequest(kickoff) {
+      var docs = chatDocsReady() || [];
+      var body = { messages: kickoff ? [] : chatMessages.slice(-CHAT_MAX), kickoff: !!kickoff, form: chatFormSnapshot() };
+      if (APP_MODE) body.documentKeys = docs.map(function(d) { return d.key; });
+      else body.documents = docs.map(function(d) { return { name: d.name, text: d.text }; });
+      return body;
+    }
+
+    // Ask the server; on AWS, files need a minute or two before they can be searched
+    function askChat(kickoff, attempt) {
+      attempt = attempt || 0;
+      chatBusy = true;
+      renderChat(attempt ? 'Still reading your files. This takes a minute or two after upload…' : 'Thinking…');
+      postJson('/api/stack-chat', '/chat', chatRequest(kickoff))
+        .then(function(res) {
+          if (res && res.status === 'indexing' && attempt < 24) {
+            setTimeout(function() { askChat(kickoff, attempt + 1); }, 8000);
+            return;
+          }
+          chatBusy = false;
+          if (res && res.status === 'indexing') {
+            res = { error: 'Your files are taking longer than usual to get ready. Please ask again in a minute.' };
+          }
+          if (!res || res.error || !res.reply) {
+            chatMessages.push({ role: 'assistant', text: (res && res.error) || 'Sorry, something went wrong. Please try again.' , failed: true });
+          } else {
+            chatMessages.push({ role: 'assistant', text: res.reply });
+          }
+          renderChat();
+        })
+        .catch(function(err) {
+          chatBusy = false;
+          chatMessages.push({ role: 'assistant', text: (err && err.message) || 'Sorry, something went wrong. Please try again.', failed: true });
+          renderChat();
+        });
+    }
+
+    function sendChat(text) {
+      text = (text || '').trim();
+      if (!text || chatBusy) return;
+      chatMessages.push({ role: 'user', text: text.slice(0, 1500) });
+      if (chatMessages.length > 40) chatMessages = chatMessages.slice(-40);
+      chatText.value = '';
+      chatText.style.height = '';
+      askChat(false);
+    }
+
+    // When a new set of files is ready and nothing has been asked yet, the agent opens the conversation
+    function maybeChatKickoff() {
+      var ready = chatDocsReady();
+      if (!ready || !ready.length || chatBusy) { renderChat(); return; }
+      if (chatMessages.some(function(m) { return m.role === 'user'; })) return;
+      var key = ready.map(function(d) { return d.name; }).join('|');
+      if (key === chatKickoffKey) return;
+      chatKickoffKey = key;
+      chatMessages = [];
+      askChat(true);
+    }
+
+    // The report gets the real conversation, without error replies
+    function chatForReport() {
+      return chatMessages.filter(function(m) { return !m.failed; }).slice(-CHAT_MAX)
+        .map(function(m) { return { role: m.role, text: m.text }; });
+    }
+
+    chatForm.addEventListener('submit', function(e) { e.preventDefault(); sendChat(chatText.value); });
+    chatText.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(chatText.value); }
+    });
+    chatText.addEventListener('input', function() {
+      chatText.style.height = '';
+      chatText.style.height = Math.min(chatText.scrollHeight, 120) + 'px';
+    });
+    chatFab.addEventListener('click', function() { chatPanel.classList.add('open'); chatText.focus(); });
+    document.getElementById('chatClose').addEventListener('click', function() { chatPanel.classList.remove('open'); });
+
+    // ── Submit ──
+    var progressTimer = null;
+
+    function setLoading(loading) {
+      var btn = document.getElementById('submitBtn');
+      btn.disabled = loading;
+      document.getElementById('submitText').textContent = loading ? 'Building your report…' : 'Get My Savings Report';
+      document.getElementById('submitSpinner').style.display = loading ? 'inline-block' : 'none';
+
+      var panel = document.getElementById('progressPanel');
+      var steps = document.querySelectorAll('#progressSteps li');
+      clearInterval(progressTimer);
+      if (loading) {
+        panel.classList.add('visible');
+        var current = 0;
+        steps.forEach(function(s, i) { s.className = i === 0 ? 'active' : ''; });
+        progressTimer = setInterval(function() {
+          if (current < steps.length - 1) {
+            steps[current].className = 'done';
+            current++;
+            steps[current].className = 'active';
+          }
+        }, 14000);
+      } else {
+        panel.classList.remove('visible');
+      }
+    }
+
+    function selectedPriorities() {
+      var list = [];
+      document.querySelectorAll('#priorities input:checked').forEach(function(el) { list.push(el.value); });
+      return list;
+    }
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var emailGroup = document.getElementById('emailGroup');
+      var email = document.getElementById('email').value.trim();
+      var stackError = document.getElementById('stackError');
+      var valid = true;
+
+      emailGroup.classList.remove('has-error');
+      document.getElementById('emailError').classList.remove('visible');
+      stackError.classList.remove('visible');
+      document.querySelectorAll('#layerGroups .has-error').forEach(function(el) { el.classList.remove('has-error'); });
+
+      if (!APP_MODE && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        emailGroup.classList.add('has-error');
+        document.getElementById('emailError').classList.add('visible');
+        valid = false;
+      }
+
+      var components = readComponents();
+      var badRow = null;
+      components.forEach(function(c) {
+        if (!c.component || (c.monthlyCost !== null && (!isFinite(c.monthlyCost) || c.monthlyCost < 0))) {
+          c.row.classList.add('has-error');
+          if (!badRow) badRow = c.row;
+        }
+      });
+      if (!components.length || badRow || components.length > MAX_TOOLS) {
+        stackError.textContent = !components.length
+          ? 'Add at least one tool you pay for.'
+          : badRow
+            ? 'Each row needs the name of a tool, and any cost you enter must be 0 or more.'
+            : 'You have listed ' + components.length + ' tools. A report covers up to ' + MAX_TOOLS + ', so please remove duplicates or your smallest tools (use the × on a row).';
+        stackError.classList.add('visible');
+        valid = false;
+      }
+
+      if (uploadedDocs.some(function(d) { return d.status === 'reading'; })) {
+        showFileError('Please wait until your files have finished reading.');
+        valid = false;
+      }
+      if (APP_MODE && uploadedDocs.some(function(d) { return d.upload === 'uploading'; })) {
+        showFileError('Please wait until your files have finished uploading.');
+        valid = false;
+      }
+
+      if (!valid) {
+        var firstError = document.querySelector('.has-error, .form-error.visible');
+        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      var payload = {
+        email: email,
+        company: document.getElementById('company').value.trim(),
+        industry: document.getElementById('industry').value.trim(),
+        teamSize: wholeNumber(document.getElementById('teamSize').value),
+        teamSizeNextYear: wholeNumber(document.getElementById('teamSizeNextYear').value),
+        region: document.getElementById('region').value,
+        currency: currencySelect.value,
+        horizonYears: Number(document.getElementById('horizon').value),
+        priorities: selectedPriorities(),
+        notes: document.getElementById('notes').value.trim(),
+        chat: chatForReport(),
+        components: components.map(function(c) {
+          return { layer: c.layer, component: c.component, monthlyCost: c.monthlyCost };
+        }),
+        documents: uploadedDocs
+          .filter(function(d) { return d.status === 'ready'; })
+          .map(function(d) { return { name: d.name, text: d.text }; })
+      };
+
+      setLoading(true);
+
+      if (APP_MODE) {
+        runAppReport(payload);
+        return;
+      }
+
+      fetch('/api/stack-optimizer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(function(res) {
+        return res.json().catch(function() { return { error: 'The server returned an unexpected response.' }; });
+      })
+      .then(function(data) {
+        setLoading(false);
+        if (data && data.totals) {
+          lastReport = data;
+          renderReport(data, document.getElementById('company').value.trim());
+        } else {
+          renderError((data && data.error) || 'Something went wrong. Please try again.');
+        }
+      })
+      .catch(function() {
+        setLoading(false);
+        renderError('We could not reach the server. Please check your connection and try again.');
+      });
+    });
+
+    // ── App mode (stack.t4tangerine.com): sign-in, uploads to S3, saved reports ──
+    // The same page runs on www.t4tangerine.com/stack (public mode, Vercel API) and
+    // on stack.t4tangerine.com (app mode, AWS API with Cognito sign-in).
+    var APP_MODE = /^stack\./.test(location.hostname) || /[?&]app\b/.test(location.search) || (function() {
+      try { return sessionStorage.getItem('t4t.appMode') === '1'; } catch (e) { return false; }
+    })();
+    var appCfg = null;
+    var AUTH_KEY = 't4t.stackApp.auth.v1';
+    var UPLOADABLE = /\.(pdf|txt|md|csv|html|doc|docx|xls|xlsx)$/i;
+
+    function b64url(bytes) {
+      var str = '';
+      bytes.forEach(function(b) { str += String.fromCharCode(b); });
+      return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    function randomString() {
+      var bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      return b64url(bytes);
+    }
+
+    function decodeJwt(token) {
+      var part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(part), function(c) { return c.charCodeAt(0); })));
+    }
+
+    function redirectUri() {
+      return location.origin + '/';
+    }
+
+    // Authorization code flow with PKCE against the Cognito managed login page
+    function startLogin(signUp) {
+      var verifier = randomString();
+      var state = randomString();
+      try { sessionStorage.setItem('t4t.pkce', JSON.stringify({ verifier: verifier, state: state })); } catch (e) {}
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)).then(function(hash) {
+        var query = new URLSearchParams({
+          response_type: 'code',
+          client_id: appCfg.clientId,
+          redirect_uri: redirectUri(),
+          scope: 'openid email profile',
+          state: state,
+          code_challenge: b64url(new Uint8Array(hash)),
+          code_challenge_method: 'S256'
+        });
+        location.assign(appCfg.loginUrl + (signUp ? '/signup' : '/oauth2/authorize') + '?' + query);
+      });
+    }
+
+    function tokenRequest(params) {
+      return fetch(appCfg.loginUrl + '/oauth2/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(params)
+      }).then(function(res) {
+        if (!res.ok) throw new Error('Sign-in failed (' + res.status + ')');
+        return res.json();
+      });
+    }
+
+    function loadAuth() {
+      try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { return null; }
+    }
+
+    function saveTokens(tokens, previousRefreshToken) {
+      var auth = {
+        idToken: tokens.id_token,
+        expiresAt: Date.now() + (tokens.expires_in || 3600) * 1000,
+        refreshToken: tokens.refresh_token || previousRefreshToken
+      };
+      try { localStorage.setItem(AUTH_KEY, JSON.stringify(auth)); } catch (e) {}
+      return auth;
+    }
+
+    function clearAuth() {
+      try { localStorage.removeItem(AUTH_KEY); } catch (e) {}
+    }
+
+    function getIdToken(forceRefresh) {
+      var auth = loadAuth();
+      if (!auth) return Promise.resolve(null);
+      if (!forceRefresh && auth.idToken && auth.expiresAt - 60000 > Date.now()) return Promise.resolve(auth.idToken);
+      if (!auth.refreshToken) return Promise.resolve(null);
+      return tokenRequest({ grant_type: 'refresh_token', client_id: appCfg.clientId, refresh_token: auth.refreshToken })
+        .then(function(tokens) { return saveTokens(tokens, auth.refreshToken).idToken; })
+        .catch(function() { clearAuth(); return null; });
+    }
+
+    function handleLoginRedirect() {
+      var query = new URLSearchParams(location.search);
+      if (!query.get('code')) return Promise.resolve();
+      var pkce = null;
+      try {
+        pkce = JSON.parse(sessionStorage.getItem('t4t.pkce') || 'null');
+        sessionStorage.removeItem('t4t.pkce');
+      } catch (e) {}
+      history.replaceState(null, '', location.pathname + '#optimizer');
+      if (!pkce || query.get('state') !== pkce.state) return Promise.resolve();
+      return tokenRequest({
+        grant_type: 'authorization_code',
+        client_id: appCfg.clientId,
+        code: query.get('code'),
+        redirect_uri: redirectUri(),
+        code_verifier: pkce.verifier
+      }).then(function(tokens) { saveTokens(tokens); });
+    }
+
+    function signOut() {
+      clearAuth();
+      location.assign(appCfg.loginUrl + '/logout?' + new URLSearchParams({ client_id: appCfg.clientId, logout_uri: redirectUri() }));
+    }
+
+    // Calls the AWS API with the signed-in user's token; refreshes it once on 401
+    function api(path, options) {
+      options = options || {};
+      function call(token) {
+        var headers = { Authorization: token };
+        if (options.body) headers['Content-Type'] = 'application/json';
+        return fetch(appCfg.apiUrl + path, {
+          method: options.method || 'GET',
+          headers: headers,
+          body: options.body ? JSON.stringify(options.body) : undefined
+        });
+      }
+      function signedOut() {
+        showSignedOut();
+        throw new Error('Please sign in again.');
+      }
+      return getIdToken().then(function(token) {
+        if (!token) signedOut();
+        return call(token).then(function(res) {
+          if (res.status !== 401) return res;
+          return getIdToken(true).then(function(fresh) {
+            if (!fresh) signedOut();
+            return call(fresh);
+          });
+        });
+      }).then(function(res) {
+        return res.json().catch(function() { return {}; }).then(function(body) {
+          if (!res.ok) throw new Error(body.error || 'Something went wrong (' + res.status + '). Please try again.');
+          return body;
+        });
+      });
+    }
+
+    function postJson(publicPath, appPath, body) {
+      if (APP_MODE) return api(appPath, { method: 'POST', body: body });
+      return fetch(publicPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      }).then(function(res) {
+        return res.json().catch(function() { return { error: 'The server returned an unexpected response.' }; });
+      });
+    }
+
+    // Files go to the user's private folder in S3, where the advisor can search them
+    function uploadDoc(file, doc) {
+      if (!UPLOADABLE.test(file.name)) {
+        doc.upload = 'skipped';
+        renderFiles();
+        return;
+      }
+      doc.upload = 'uploading';
+      renderFiles();
+      api('/uploads', { method: 'POST', body: { fileName: file.name, size: file.size } })
+        .then(function(u) {
+          return fetch(u.uploadUrl, { method: 'PUT', headers: { 'Content-Type': u.contentType }, body: file }).then(function(res) {
+            if (!res.ok) throw new Error('Upload failed (' + res.status + ')');
+            doc.key = u.key;
+            doc.upload = 'done';
+          });
+        })
+        .catch(function() { doc.upload = 'error'; })
+        .then(renderFiles);
+    }
+
+    function runAppReport(payload) {
+      delete payload.email;
+      payload.documents = uploadedDocs
+        .filter(function(d) { return d.upload === 'done' && d.key; })
+        .map(function(d) { return d.key; });
+      api('/reports', { method: 'POST', body: payload })
+        .then(function(created) { return waitForReport(created.reportId); })
+        .then(function(item) {
+          setLoading(false);
+          lastReport = item.result;
+          renderReport(item.result, payload.company, item.updatedAt, item.reportId);
+          loadHistory();
+        })
+        .catch(function(err) {
+          setLoading(false);
+          renderError((err && err.message) || 'Something went wrong. Please try again.');
+          loadHistory();
+        });
+    }
+
+    // Reports run in the background; check every few seconds until ready
+    function waitForReport(reportId) {
+      var started = Date.now();
+      var limit = 16 * 60 * 1000;
+      return new Promise(function(resolve, reject) {
+        (function check() {
+          api('/reports/' + encodeURIComponent(reportId)).then(function(item) {
+            if (item.status === 'COMPLETE' && item.result) return resolve(item);
+            if (item.status === 'FAILED') return reject(new Error(item.error || 'We couldn\'t build your report. Please try again.'));
+            if (Date.now() - started > limit) return reject(new Error('Your report is taking longer than usual. It will appear under "Your reports" when it is ready.'));
+            setTimeout(check, 5000);
+          }).catch(function(err) {
+            if (Date.now() - started > limit) reject(err); else setTimeout(check, 8000);
+          });
+        })();
+      });
+    }
+
+    function loadHistory() {
+      var panel = document.getElementById('historyPanel');
+      var list = document.getElementById('historyList');
+      api('/reports').then(function(res) {
+        var reports = res.reports || [];
+        panel.hidden = !reports.length;
+        list.innerHTML = '';
+        reports.forEach(function(item) {
+          var li = document.createElement('li');
+          var date = formatDateTime(item.status === 'COMPLETE' ? item.updatedAt : item.createdAt);
+          var status;
+          if (item.status === 'COMPLETE') {
+            var t = item.result && item.result.totals;
+            status = t ? '<span class="history-saving">Saves ' + formatMoney(t.annual_savings, item.result.currency) + ' a year</span>' : 'Ready';
+          } else if (item.status === 'FAILED') {
+            status = '<span class="history-meta">Didn\'t finish</span>';
+          } else {
+            status = '<span class="history-meta">In progress&hellip;</span>';
+          }
+          li.innerHTML = '<span><strong>' + escapeHtml(item.company || 'Untitled report') + '</strong> <span class="history-meta">&middot; ' + escapeHtml(date) + '</span></span>' +
+            '<span class="history-actions">' + status +
+              (item.status === 'COMPLETE' ? '<button type="button" class="link-button open-btn">Open</button>' : '') +
+              '<button type="button" class="link-button danger delete-btn" aria-label="Delete this report">Delete</button>' +
+            '</span>';
+          var open = li.querySelector('.open-btn');
+          if (open) open.addEventListener('click', function() {
+            api('/reports/' + encodeURIComponent(item.reportId)).then(function(full) {
+              lastReport = full.result;
+              renderReport(full.result, item.company, full.updatedAt, item.reportId);
+            }).catch(function(err) { renderError(err.message); });
+          });
+          li.querySelector('.delete-btn').addEventListener('click', function() { confirmDelete(li, item); });
+          list.appendChild(li);
+        });
+      }).catch(function() {});
+    }
+
+    // Ask inline before deleting: the report and its uploaded files are gone for good
+    function confirmDelete(li, item) {
+      var actions = li.querySelector('.history-actions');
+      actions.innerHTML = '<span class="history-meta">Delete this report and its files?</span>' +
+        '<button type="button" class="link-button danger yes-btn">Delete</button>' +
+        '<button type="button" class="link-button no-btn">Cancel</button>';
+      actions.querySelector('.no-btn').addEventListener('click', function() { loadHistory(); });
+      actions.querySelector('.yes-btn').addEventListener('click', function() {
+        actions.innerHTML = '<span class="history-meta">Deleting&hellip;</span>';
+        api('/reports/' + encodeURIComponent(item.reportId), { method: 'DELETE' })
+          .then(function() {
+            if (currentReportId === item.reportId) {
+              document.getElementById('reportSection').classList.remove('visible');
+              document.getElementById('reportContainer').innerHTML = '';
+              currentReportId = '';
+            }
+            loadHistory();
+          })
+          .catch(function(err) {
+            actions.innerHTML = '<span class="history-meta">' + escapeHtml((err && err.message) || 'Could not delete. Please try again.') + '</span>';
+            setTimeout(loadHistory, 4000);
+          });
+      });
+    }
+
+    function showSignedOut() {
+      document.getElementById('signinGate').hidden = false;
+      document.getElementById('appBar').hidden = true;
+      document.getElementById('historyPanel').hidden = true;
+      form.hidden = true;
+      document.getElementById('chatPanel').hidden = true;
+      document.getElementById('chatFab').hidden = true;
+    }
+
+    function showSignedIn(claims) {
+      var bar = document.getElementById('appBar');
+      bar.innerHTML = '<span>Signed in as <strong>' + escapeHtml(claims.email || 'your account') + '</strong></span>' +
+        '<button type="button" class="link-button" id="signOutBtn">Sign out</button>';
+      bar.querySelector('#signOutBtn').addEventListener('click', signOut);
+      bar.hidden = false;
+      document.getElementById('signinGate').hidden = true;
+      document.getElementById('emailGroup').hidden = true;
+      var note = document.querySelector('.privacy-note');
+      if (note) note.innerHTML = 'Files you add are stored in the EU in your account for 30 days so the advisor can search them, then deleted automatically. See our <a href="' + appCfg.publicSiteUrl + '/privacy" style="text-decoration:underline;">privacy policy</a>.';
+      form.hidden = false;
+      document.getElementById('chatPanel').hidden = false;
+      document.getElementById('chatFab').hidden = false;
+      loadHistory();
+    }
+
+    // Links to the rest of the website point back to www.t4tangerine.com
+    function rewriteSiteLinks() {
+      document.querySelectorAll('a[href^="/"]').forEach(function(a) {
+        a.setAttribute('href', appCfg.publicSiteUrl + a.getAttribute('href'));
+      });
+    }
+
+    function initApp() {
+      try { sessionStorage.setItem('t4t.appMode', '1'); } catch (e) {}
+      showSignedOut();
+      document.getElementById('signInBtn').addEventListener('click', function() { startLogin(false); });
+      document.getElementById('signUpBtn').addEventListener('click', function() { startLogin(true); });
+      fetch('/app-config.json')
+        .then(function(res) { return res.json(); })
+        .then(function(cfg) {
+          appCfg = cfg;
+          rewriteSiteLinks();
+          return handleLoginRedirect();
+        })
+        .then(function() { return getIdToken(); })
+        .then(function(token) {
+          if (token) showSignedIn(decodeJwt(token)); else showSignedOut();
+        })
+        .catch(function() { showSignedOut(); });
+    }
+
+    if (APP_MODE) initApp();
+
+    // ── Report rendering ──
+    // ── PDF download ──
+    var reportCompany = '';
+    var reportGeneratedAt = '';
+    var currentReportId = '';
+
+    function downloadReportPdf() {
+      var btn = document.getElementById('downloadPdfBtn');
+      var source = document.getElementById('reportContainer');
+      if (!btn || !source) return;
+      btn.disabled = true;
+      btn.textContent = 'Preparing PDF…';
+      var slug = (reportCompany || 'company').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'company';
+      var g = new Date(reportGeneratedAt);
+      if (isNaN(g.getTime())) g = new Date();
+      var pad = function(n) { return (n < 10 ? '0' : '') + n; };
+      var stamp = g.getFullYear() + '-' + pad(g.getMonth() + 1) + '-' + pad(g.getDate()) + '-' + pad(g.getHours()) + pad(g.getMinutes());
+      var filename = 'savings-report-' + slug + '-' + stamp + '.pdf';
+
+      // Render a print-styled copy off screen, so the page itself doesn't change
+      var wrap = document.createElement('div');
+      wrap.className = 'pdf-export';
+      wrap.innerHTML = source.innerHTML;
+      wrap.querySelectorAll('.no-print').forEach(function(el) { el.remove(); });
+      var foot = document.createElement('p');
+      foot.className = 'pdf-footer';
+      foot.textContent = 'Generated by T4Tangerine Stack Optimizer on ' + formatDateTime(reportGeneratedAt) + ' · t4tangerine.com';
+      wrap.appendChild(foot);
+      var holder = document.createElement('div');
+      holder.className = 'pdf-holder';
+      holder.appendChild(wrap);
+      document.body.appendChild(holder);
+
+      function done() {
+        holder.remove();
+        btn.disabled = false;
+        btn.innerHTML = '&#x2B07; Download PDF';
+      }
+
+      Promise.all([
+        loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'),
+        loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js')
+      ])
+        .then(function() {
+          return window.html2canvas(wrap, { scale: 2, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0, windowWidth: 1100 });
+        })
+        .then(function(canvas) {
+          savePdfPages(canvas, wrap, filename);
+          done();
+        })
+        .catch(function() {
+          // Fall back to the browser's own "Save as PDF"
+          done();
+          window.print();
+        });
+    }
+
+    // Slice one tall canvas into A4 pages, breaking between cards, paragraphs and list items
+    function savePdfPages(canvas, wrap, filename) {
+      var margin = 12, pageW = 210, pageH = 297;
+      var innerW = pageW - margin * 2, innerH = pageH - margin * 2 - 6;
+      var cssW = wrap.offsetWidth, totalH = wrap.offsetHeight;
+      var pxPerMm = cssW / innerW;
+      var pagePx = innerH * pxPerMm;
+      var scale = canvas.width / cssW;
+
+      var origin = wrap.getBoundingClientRect().top;
+      var breaks = [];
+      // Cards break a little above their border; text breaks right at its top so the line above stays whole
+      wrap.querySelectorAll('.report-header, .disclaimer-banner, .summary-card, .report-card, .layer-card, .pdf-footer').forEach(function(el) {
+        breaks.push(el.getBoundingClientRect().top - origin - 6);
+      });
+      wrap.querySelectorAll('.kpi-grid, .report-card > h3, .compare-bars, .layer-notes p, .report-card > p, .report-card li').forEach(function(el) {
+        breaks.push(el.getBoundingClientRect().top - origin - 1);
+      });
+      breaks.sort(function(a, b) { return a - b; });
+
+      var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      var slices = [], start = 0;
+      while (start < totalH - 1) {
+        var end = Math.min(start + pagePx, totalH);
+        if (end < totalH) {
+          var best = null;
+          breaks.forEach(function(b) { if (b > start + pagePx * 0.35 && b <= end) best = b; });
+          if (best !== null) end = best;
+        }
+        slices.push([start, end]);
+        start = end;
+      }
+
+      slices.forEach(function(sl, i) {
+        var h = Math.round((sl[1] - sl[0]) * scale);
+        var page = document.createElement('canvas');
+        page.width = canvas.width;
+        page.height = h;
+        var ctx = page.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, page.width, h);
+        ctx.drawImage(canvas, 0, Math.round(sl[0] * scale), canvas.width, h, 0, 0, canvas.width, h);
+        if (i > 0) pdf.addPage();
+        pdf.addImage(page.toDataURL('image/jpeg', 0.9), 'JPEG', margin, margin, innerW, (sl[1] - sl[0]) / pxPerMm);
+        pdf.setFontSize(8);
+        pdf.setTextColor(140);
+        pdf.text('Page ' + (i + 1) + ' of ' + slices.length, pageW - margin, pageH - 7, { align: 'right' });
+      });
+      pdf.save(filename);
+    }
+
+    function showReport(html) {
+      var section = document.getElementById('reportSection');
+      document.getElementById('reportContainer').innerHTML = html;
+      section.classList.add('visible');
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderError(message) {
+      showReport(
+        '<div class="error-banner"><h3>We couldn\'t build your report</h3><p>' + escapeHtml(message) + '</p></div>'
+      );
+    }
+
+    function deltaHtml(option, current, cur) {
+      var diff = current - option;
+      if (current <= 0 && option <= 0) return '';
+      if (Math.abs(diff) < 0.5) return '<div class="option-delta">No change</div>';
+      var cls = diff > 0 ? 'delta-good' : 'delta-bad';
+      var pct = current > 0 ? ' (' + Math.round(Math.abs(diff) / current * 100) + '%)' : '';
+      return '<div class="option-delta ' + cls + '">' + (diff > 0 ? 'Save ' : 'Costs ') + formatMoney(Math.abs(diff), cur) + '/mo' + pct + (diff > 0 ? '' : ' more') + '</div>';
+    }
+
+    function bar(label, value, max, color, cur) {
+      var pct = max > 0 ? Math.max(1, Math.round(value / max * 100)) : 1;
+      var inside = pct > 55;
+      return '<div class="bar-row"><span class="bar-label">' + escapeHtml(label) + '</span>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + color + ';"></div>' +
+        '<span class="bar-value" style="' + (inside ? 'right:calc(' + (100 - pct) + '% + 10px);' : 'left:calc(' + pct + '% + 8px);') + '">' + formatMoney(value, cur) + '/mo</span></div></div>';
+    }
+
+    function listHtml(items, cls) {
+      if (!items || !items.length) return '<p>None noted.</p>';
+      return '<ul class="' + (cls || 'bullets') + '">' + items.map(function(i) { return '<li>' + escapeHtml(i) + '</li>'; }).join('') + '</ul>';
+    }
+
+    // Reports saved before the server did this may say "item [27]": show the tool's name
+    // (same rules as lib/stack-optimizer/item-refs.js)
+    function nameRefs(text, names) {
+      if (typeof text !== 'string' || !/\[\d+\]/.test(text)) return text;
+      function name(i) { return i >= 0 && i < names.length && names[i] ? names[i] : null; }
+      var out = text.replace(/\s*\((?:(?:items?|rows?|entry|entries)\s*)?\[(\d+)\]\)/gi, function(m, n, offset, whole) {
+        var label = name(Number(n));
+        if (!label) return m;
+        return whole.slice(Math.max(0, offset - 80), offset).toLowerCase().indexOf(label.toLowerCase()) !== -1 ? '' : ' (' + label + ')';
+      });
+      out = out.replace(/\b(?:items?|rows?|entry|entries)\s*\[(\d+)\](\s+)?/gi, function(m, n, space, offset, whole) {
+        var label = name(Number(n));
+        if (!label) return m;
+        if (whole.slice(offset + m.length).toLowerCase().indexOf(label.toLowerCase()) === 0) return '';
+        return label + (space || '');
+      });
+      return out.replace(/\[(\d+)\]/g, function(m, n) { return name(Number(n)) || m; });
+    }
+    function nameItemRefs(value, names) {
+      if (typeof value === 'string') return nameRefs(value, names);
+      if (Array.isArray(value)) return value.map(function(v) { return nameItemRefs(v, names); });
+      if (value && typeof value === 'object') {
+        var out = {};
+        Object.keys(value).forEach(function(k) { out[k] = nameItemRefs(value[k], names); });
+        return out;
+      }
+      return value;
+    }
+
+    function renderReport(data, company, generatedAt, reportId) {
+      data = nameItemRefs(data, (data.layers || []).map(function(l) { return l.current_component; }));
+      reportCompany = company || '';
+      reportGeneratedAt = generatedAt || new Date().toISOString();
+      currentReportId = reportId || '';
+      var cur = data.currency;
+      var t = data.totals;
+      var years = data.horizon_years;
+      var html = '';
+
+      html += '<div class="report-header"><div><p class="section-label" style="margin-bottom:6px;">Your Savings Report' + (reportCompany ? ' &middot; ' + escapeHtml(reportCompany) : '') + '</p><h2>Where you can spend less</h2><p class="report-generated">Generated ' + escapeHtml(formatDateTime(reportGeneratedAt)) + '</p></div>';
+      html += '<div class="no-print"><button type="button" class="btn-ghost" id="downloadPdfBtn" onclick="downloadReportPdf()">&#x2B07; Download PDF</button></div></div>';
+
+      html += '<div class="disclaimer-banner"><strong>Estimates, not quotes.</strong> Figures are AI-generated from public list prices' + (t.estimated_costs ? ', and ' + t.estimated_costs + ' of your current costs were estimated because you left them blank' : '') + '. Confirm prices with the providers before you commit.</div>';
+
+      // Summary
+      html += '<div class="summary-card"><h3>Summary</h3>';
+      html += '<p class="summary-text">' + escapeHtml(data.executive_summary) + '</p>';
+      html += '<div class="kpi-grid">';
+      html += '<div class="kpi"><div class="kpi-label">You spend today</div><div class="kpi-value">' + formatMoney(t.current_monthly, cur) + '</div><div class="kpi-sub">per month' + (t.current_per_person != null ? ' &middot; ' + formatMoney(t.current_per_person, cur) + ' per person' : '') + (t.estimated_costs ? ' &middot; ' + t.estimated_costs + ' estimated' : '') + '</div></div>';
+      html += '<div class="kpi"><div class="kpi-label">After the changes</div><div class="kpi-value accent">' + formatMoney(t.recommended_monthly, cur) + '</div><div class="kpi-sub">per month' + (t.recommended_per_person != null ? ' &middot; ' + formatMoney(t.recommended_per_person, cur) + ' per person' : '') + '</div></div>';
+      html += '<div class="kpi"><div class="kpi-label">You save</div><div class="kpi-value accent">' + formatMoney(t.annual_savings, cur) + '</div><div class="kpi-sub">per year &middot; ' + Math.round(t.savings_percent) + '%</div></div>';
+      html += '<div class="kpi"><div class="kpi-label">Net over ' + years + ' year' + (years === 1 ? '' : 's') + '</div><div class="kpi-value">' + formatMoney(t.horizon_net_savings, cur) + '</div><div class="kpi-sub">' +
+        (t.payback_months != null ? 'after a one-off ' + formatMoney(t.one_time_migration_cost, cur) + ' to switch &middot; pays for itself in ' + t.payback_months + ' months' : 'after one-off switching costs') + '</div></div>';
+      html += '</div></div>';
+
+      // Comparison
+      var max = Math.max(t.current_monthly, t.all_aws_monthly, t.all_gcp_monthly, t.recommended_monthly);
+      html += '<div class="report-card"><h3>Monthly cost: today vs the options</h3><div class="compare-bars">';
+      html += bar('Today', t.current_monthly, max, '#D6D3D1', cur);
+      // Only show a cloud when it was an option for at least one tool (not ruled out by policy)
+      function cloudOffered(key) {
+        return data.layers.some(function(l) { return l.cloud_comparison !== false && l[key]; });
+      }
+      if (cloudOffered('aws_services')) html += bar('Infrastructure moved to AWS', t.all_aws_monthly, max, 'var(--aws)', cur);
+      if (cloudOffered('gcp_services')) html += bar('Infrastructure moved to Google Cloud', t.all_gcp_monthly, max, 'var(--gcp)', cur);
+      html += bar('Our recommendation', t.recommended_monthly, max, 'var(--green)', cur);
+      html += '</div></div>';
+
+      // Layers
+      html += '<div class="report-card"><h3>What to do with each tool</h3>';
+      var REC_LABELS = {
+        aws: 'Move to AWS',
+        gcp: 'Move to Google Cloud',
+        keep: 'Keep as is',
+        cancel: 'Cancel',
+        downgrade: 'Downgrade',
+        consolidate: 'Merge into another tool',
+        switch: 'Switch to a cheaper tool'
+      };
+      function optionHtml(title, cost, services, chosen, current) {
+        if (!services && !chosen) {
+          return '<div class="option"><div class="option-provider">' + title + '</div><div class="option-services">Not an option for this tool</div></div>';
+        }
+        return '<div class="option' + (chosen ? ' chosen' : '') + '"><div class="option-provider">' + title + '</div>' +
+          '<div class="option-cost">' + formatMoney(cost, cur) + '<span style="font-size:13px;font-weight:500;color:var(--muted);">/mo</span></div>' +
+          (current == null ? '' : deltaHtml(cost, current, cur)) +
+          '<div class="option-services">' + escapeHtml(services) + '</div></div>';
+      }
+      data.layers.forEach(function(l) {
+        var rec = l.recommendation;
+        var recLabel = REC_LABELS[rec] || 'Keep as is';
+        var effortLabel = { low: 'Small', medium: 'Medium', high: 'Large' }[l.migration_effort] || 'Some';
+        var cloud = l.cloud_comparison !== false;
+        html += '<div class="layer-card"><div class="layer-head"><div><div class="layer-name">' + escapeHtml(layerMeta(l.layer).label) + '</div><h4>' + escapeHtml(l.current_component) + '</h4></div>';
+        html += '<div><span class="badge badge-' + escapeHtml(rec) + '">' + recLabel + '</span> ';
+        if (rec !== 'keep' && rec !== 'cancel') html += '<span class="badge badge-' + escapeHtml(l.migration_effort) + '">' + effortLabel + ' effort to switch</span>';
+        html += '</div></div>';
+
+        var todayTitle = 'Today' + (l.current_cost_estimated ? ' (our estimate)' : '');
+        var today = '<div class="option' + (rec === 'keep' ? ' chosen' : '') + '"><div class="option-provider">' + todayTitle + '</div><div class="option-cost">' + (l.current_cost_estimated ? '&asymp; ' : '') + formatMoney(l.current_monthly_cost, cur) + '<span style="font-size:13px;font-weight:500;color:var(--muted);">/mo</span></div><div class="option-services">' + escapeHtml(l.current_component) + '</div></div>';
+        if (cloud && rec !== 'aws' && rec !== 'gcp' && rec !== 'keep') {
+          // Infrastructure to cancel, downgrade, merge or switch: today vs what we recommend
+          html += '<div class="option-grid two">' + today +
+            optionHtml('Recommended', l.recommended_monthly_cost, rec === 'cancel' ? 'Stop paying for it' : (l.alternative || recLabel), true, l.current_monthly_cost) + '</div>';
+        } else if (cloud) {
+          // Infrastructure: compare the two clouds
+          html += '<div class="option-grid">' + today +
+            optionHtml('AWS', l.aws_monthly_cost, l.aws_services, rec === 'aws', l.current_monthly_cost) +
+            optionHtml('Google Cloud', l.gcp_monthly_cost, l.gcp_services, rec === 'gcp', l.current_monthly_cost) + '</div>';
+        } else if (rec !== 'keep') {
+          // Business software: today vs what we recommend
+          var after = rec === 'cancel' ? 'Stop paying for it' : (l.alternative || recLabel);
+          html += '<div class="option-grid two">' + today +
+            optionHtml('Recommended', l.recommended_monthly_cost, after, true, l.current_monthly_cost) + '</div>';
+        } else {
+          html += '<div class="option-grid two">' + today + '</div>';
+        }
+
+        html += '<div class="layer-notes"><p><strong>Why:</strong> ' + escapeHtml(l.rationale) + '</p>';
+        if (l.efficiency_gains) html += '<p><strong>Other benefits:</strong> ' + escapeHtml(l.efficiency_gains) + '</p>';
+        if (rec !== 'keep' && l.one_time_migration_cost > 0) html += '<p><strong>One-off cost to switch:</strong> ~' + formatMoney(l.one_time_migration_cost, cur) + '</p>';
+        html += '</div></div>';
+      });
+      html += '</div>';
+
+      // Context alignment
+      html += '<div class="report-card"><h3>How your policies and goals shaped this</h3>';
+      if (data.documents_used && data.documents_used.length) {
+        html += '<p style="font-size:14px;color:var(--muted);margin-bottom:12px;">Based on: ' + data.documents_used.map(escapeHtml).join(', ') + '</p>';
+      } else {
+        html += '<p style="font-size:14px;color:var(--muted);margin-bottom:12px;">No files were attached to this report, so it is based on what you entered in the form and told us in the chat. Upload your policies and goals for advice tailored to your company.</p>';
+      }
+      if (data.context_alignment.length) {
+        html += '<ul class="bullets">' + data.context_alignment.map(function(c) {
+          var src = c.source && c.source !== 'general' ? '<span class="source-tag">' + escapeHtml(c.source) + '</span>' : '';
+          return '<li>' + escapeHtml(c.insight) + src + '</li>';
+        }).join('') + '</ul>';
+      }
+      html += '</div>';
+
+      html += '<div class="report-card"><h3>More ways to save over time</h3>' + listHtml(data.long_term_efficiency) + '</div>';
+
+      if (data.roadmap.length) {
+        html += '<div class="report-card"><h3>Action plan</h3><ol class="roadmap">' + data.roadmap.map(function(r) {
+          return '<li><span class="phase-title">' + escapeHtml(r.phase) + '</span><span class="phase-time">' + escapeHtml(r.timeframe) + '</span><br>' + escapeHtml(r.actions) + '</li>';
+        }).join('') + '</ol></div>';
+      }
+
+      html += '<div class="report-card"><h3>Risks to plan for</h3>' + listHtml(data.risks) + '</div>';
+      html += '<div class="report-card"><h3>What we assumed</h3>' + listHtml(data.assumptions) + '</div>';
+
+      html += '<div class="report-card teaser-card no-print"><h3>Want help making these changes?</h3><p>We\'ll check these numbers against your real bills and help your teams start with the changes that pay back fastest.</p><a href="https://www.t4tangerine.com/book" class="btn-dark">Let\'s have a chat &#x1F34A;</a></div>';
+
+      showReport(html);
+    }
+  </script>
+
+</body>
+</html>
