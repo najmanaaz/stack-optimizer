@@ -1,0 +1,29 @@
+NORDLICHT ANALYTICS S.A R.L.
+SECURITY AND DATA PROTECTION POLICY (SUMMARY)
+Version 1.0 - Owner: CTO - Approved: January 2024
+STATUS: SUPERSEDED by Version 2.0 (June 2026). Kept for audit history only. Do not use for new decisions.
+Fictional document for testing the T4Tangerine Stack Optimizer.
+
+1. CUSTOMER DATA
+
+1.1 Customer data should preferably be stored in the European Union.
+1.2 Approved cloud providers for customer data: Amazon Web Services, Microsoft Azure and Google Cloud Platform. EU regions are preferred but US regions may be used for backups.
+1.3 New vendors that receive customer data need a signed contract. No further approval is required.
+
+2. INTERNAL TOOLS
+
+2.1 Any internal tool may be used if the team lead agrees.
+
+3. ACCESS
+
+3.1 Tools used by more than 10 people should use single sign-on (SSO).
+3.2 Two-step verification is recommended for administrators.
+3.3 Access is removed within 7 days when someone leaves.
+
+4. LOGS
+
+4.1 Logs are kept for at most 90 days.
+
+5. AVAILABILITY
+
+5.1 Backups are tested once a year.

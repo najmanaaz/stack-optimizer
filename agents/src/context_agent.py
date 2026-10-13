@@ -62,9 +62,16 @@ def retrieve_passages(user_id: str, question: str) -> list[dict]:
 
 
 def ask_context_agent(user_id: str, question: str) -> str:
+    return ask_context_agent_detailed(user_id, question)["text"]
+
+
+def ask_context_agent_detailed(user_id: str, question: str) -> dict:
+    """Same as ask_context_agent, plus what evals need: the retrieved passages,
+    the model id and token usage (None when no model call was made)."""
     passages = retrieve_passages(user_id, question)
     if not passages:
-        return "No relevant context found in the uploaded documents for this question."
+        return {"text": "No relevant context found in the uploaded documents for this question.",
+                "passages": passages, "model": None, "usage": None, "stop_reason": None}
 
     excerpts = "\n\n".join(f'<excerpt id="{p["id"]}">\n{p["text"]}\n</excerpt>' for p in passages)
 
@@ -77,4 +84,11 @@ def ask_context_agent(user_id: str, question: str) -> str:
     )
     result = agent(f"<excerpts>\n{excerpts}\n</excerpts>\n\nQuestion from the Stack Advisor: {question}")
     text = str(result).strip()
-    return text or "No relevant context found."
+    usage = result.metrics.accumulated_usage
+    return {
+        "text": text or "No relevant context found.",
+        "passages": passages,
+        "model": os.environ["CONTEXT_MODEL_ID"],
+        "usage": {"input_tokens": usage.get("inputTokens", 0), "output_tokens": usage.get("outputTokens", 0)},
+        "stop_reason": str(result.stop_reason),
+    }

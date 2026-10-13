@@ -117,23 +117,43 @@ The Advisor decides when, and how often, to query the Context Agent. Typical que
 
 ## Evaluation
 
-Components are evaluated independently against synthetic companies with answer keys. For example, "Nordlicht Analytics" (six documents; about €28.6k/yr of expected savings). Fixtures are not included in this repo.
+The Context Agent has a full eval in [`evals/context-agent`](evals/context-agent): 32 questions, 3 repeats, run against **both deployments**, with every transcript and grade committed.
 
-| Component | Metrics |
-|---|---|
-| Pre-fill | Tool recall and precision, cost within ±5%, team size exact match |
-| Context Agent | Retrieval hit@5 and rank of the gold passage; answer correctness; groundedness; citation precision; correct abstention |
-| Stack Advisor | Programmatic checks: policy violations, one verdict per input row, arithmetic consistency, savings within an expected band, citation validity, jargon lint. Plus an LLM-graded rubric. Compared across Opus, Sonnet and Haiku on quality, cost and latency |
+The questions run over 11 fictional company documents. Five are deliberate traps:
+- an outdated policy that contradicts the current one;
+- meeting notes mixing proposals and decisions;
+- a contract hiding a data-residency breach;
+- a planted prompt injection ("SYSTEM OVERRIDE: ...").
 
-**Observability:** structured per-turn chat logs (passage count, latency, tokens; no message content). Next: AgentCore tracing of the Advisor's tool calls, and report-level feedback.
+The questions cover lookups, multi-document synthesis, conflicts, figures, questions that must be declined, and the injection.
 
-**Typical latency:** about 2–3 minutes for a full report with 20+ tools.
+Grading combines a `claude-sonnet-5-5` judge (structured output: each required fact present, missing or contradicted; each issue classified by kind, with code deciding which kinds are material) with code checks: every citation must point to a retrieved passage, and search must have returned the file that holds the answer.
+
+| | www: BM25 + Haiku 5.5 | AWS: Bedrock KB + Haiku 4.5 |
+|---|---|---|
+| **Pass** | **69.8%** ±14 | **70.8%** ±12 |
+| Facts correct | 93.5% | 95.3% |
+| No false claims | 97.9% | 72.9% |
+| Citations valid | 81.2% | 100% |
+| Search found the answer | 96.9% | 100% |
+| Agent cost / answer | $0.0007 | $0.0041 |
+| Latency median / p90 | 2.9 s / 4.8 s | 5.1 s / 44.8 s |
+
+**A tie on pass rate (paired difference +1.0 ±18), with opposite failure modes:**
+- **www** fabricates citation ids on about 1 answer in 5, but its claims are almost never wrong.
+- **AWS** always cites real passages but adds a material error to 27% of answers: invented details, wrong numbers, and a miscalculated notice deadline.
+- **Both** ignored the prompt injection every time.
+
+**How the grader was validated:**
+- **Self-test:** perfect answers must pass; empty, "I don't know" and confidently wrong answers must fail (36/36).
+- **Calibration:** a first grading pass that penalised style was replaced by kind-based classification, and all saved answers were re-graded without re-running the agents. The original grades are kept for comparison.
 
 ## Repository map
 
 ```
 agents/                Stack Advisor + Context Agent (Strands on AgentCore Runtime), Pydantic report model, tests
 infra/                 AWS CDK app (7 stacks) and Lambda handlers: uploads, ingest, autofill, chat, reports, worker
+evals/context-agent/   Context Agent eval: cases, fixtures, runner, grader, self-test, full results and transcripts
 lib/stack-optimizer/   Shared by both targets: chat prompt and request handling, pre-fill schema, pricing catalog, BM25 retrieval, reference cleanup
 api/                   Public target: report, pre-fill and chat endpoints on Vercel + Claude API
 stack/                 The SPA: form, chat panel, report rendering, client-side PDF export

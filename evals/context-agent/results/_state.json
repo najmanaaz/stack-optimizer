@@ -1,0 +1,84 @@
+{
+  "flow": "context-agent",
+  "metrics": [
+    {
+      "id": "pass",
+      "label": "Pass",
+      "kind": "binary"
+    },
+    {
+      "id": "facts",
+      "label": "Facts",
+      "kind": "float",
+      "scale": 1
+    },
+    {
+      "id": "no_false_claims",
+      "label": "No false claims",
+      "kind": "binary"
+    },
+    {
+      "id": "abstain_ok",
+      "label": "Abstain OK",
+      "kind": "binary"
+    },
+    {
+      "id": "citations_ok",
+      "label": "Citations OK",
+      "kind": "binary"
+    },
+    {
+      "id": "retrieval_hit",
+      "label": "Retrieval hit",
+      "kind": "binary"
+    },
+    {
+      "id": "retrieval_all",
+      "label": "All sources",
+      "kind": "binary"
+    }
+  ],
+  "perf_fields": [
+    {
+      "id": "latency_s",
+      "label": "Latency",
+      "unit": "s"
+    },
+    {
+      "id": "in_tokens",
+      "label": "In tokens"
+    },
+    {
+      "id": "out_tokens",
+      "label": "Out tokens"
+    },
+    {
+      "id": "cost_usd",
+      "label": "Cost",
+      "unit": "$"
+    },
+    {
+      "id": "answer_words",
+      "label": "Words"
+    },
+    {
+      "id": "refused",
+      "label": "Refused"
+    }
+  ],
+  "prices": {
+    "eu.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "in": 1.1,
+      "out": 5.5
+    }
+  },
+  "harness_paths": [
+    "evals/context-agent/cases.json",
+    "evals/context-agent/aws_case.py",
+    "lib/stack-optimizer/context-agent.js",
+    "lib/stack-optimizer/retrieval.js",
+    "agents/src/context_agent.py",
+    "evals/context-agent/grader.mjs"
+  ],
+  "harness_sha": "342cd44506f595717c73212dded22c810c9a027f8ac5c1428c7ae042a3389a3c"
+}
